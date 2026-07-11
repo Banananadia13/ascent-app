@@ -244,6 +244,58 @@ input[type="range"] { width: 100%; accent-color: var(--brand); }
 .set-table input { padding: 6px 9px; font-size: 14px; }
 .set-num { color: var(--text-faint); font-weight: 600; width: 26px; }
 
+/* ---------- Set editor (type-aware) ---------- */
+.set-edit-list { display: flex; flex-direction: column; gap: 8px; }
+.set-edit {
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 9px 10px; background: var(--surface-2);
+}
+.set-edit.focused { border-color: var(--brand); background: var(--brand-softer); }
+.set-edit-typed { border-style: dashed; }
+.set-edit-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.set-edit-top .set-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 999px;
+  background: var(--surface); border: 1px solid var(--border); font-size: 12px; flex: none;
+}
+.set-type-select {
+  flex: 1; padding: 6px 10px; font-size: 13.5px; font-weight: 600;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface); color: var(--text); appearance: none; -webkit-appearance: none;
+}
+.set-edit-top .btn { flex: none; }
+.set-field-row { display: flex; gap: 8px; }
+.set-field { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+.set-field > span {
+  font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--text-faint); font-weight: 650;
+}
+.set-field-input, .set-field input {
+  width: 100%; padding: 8px 9px; font-size: 15px; box-sizing: border-box;
+  border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text);
+}
+.rir-fixed {
+  padding: 8px 9px; font-size: 15px; text-align: center; color: var(--text-faint);
+  border: 1px dashed var(--border); border-radius: 8px; background: var(--surface);
+}
+.set-edit-hint { margin: 7px 0 0; font-size: 11.5px; }
+.drop-segs { display: flex; flex-direction: column; gap: 7px; }
+.drop-seg { display: flex; align-items: flex-end; gap: 7px; }
+.drop-seg-num {
+  font-size: 10.5px; font-weight: 700; color: var(--text-faint);
+  width: 42px; flex: none; padding-bottom: 9px; text-transform: uppercase; letter-spacing: .03em;
+}
+.drop-seg .set-field { flex: 1; }
+.drop-x { color: var(--text-faint); padding-bottom: 9px; flex: none; }
+.drop-seg .drop-del { flex: none; align-self: flex-end; }
+.drop-foot { display: flex; align-items: flex-end; gap: 8px; margin-top: 2px; }
+.drop-foot .set-field { max-width: 92px; }
+/* typed set bubbles (warm-up / drop / failure) */
+.set-bubble.set-typed { font-size: 15px; font-weight: 700; }
+.set-bubble.set-typed:not(.done) {
+  border-style: dashed; color: var(--text-soft); background: var(--surface-2);
+}
+
 /* ---------- Rep range bars ---------- */
 .rr-bar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: var(--surface-2); margin: 10px 0 8px; }
 .rr-seg-low { background: var(--st-yellow); }
@@ -1885,16 +1937,31 @@ const Store = (() => {
 
 const Engine = (() => {
 
-  /* ---------- RIR quality multiplier ---------- */
+  /* ---------- RIR quality multiplier ----------
+     Sets taken close to failure carry the full growth stimulus; going all the
+     way to true failure (0 RIR) is weighted a little higher, while sets left
+     well short of failure count for progressively less.
+       0 RIR    → 150%
+       1–3 RIR  → 100%
+       4 RIR    →  50%
+       5+ RIR   →  25%  */
   function rirMultiplier(rir) {
-    if (rir <= 1) return 1.0;
-    if (rir <= 3) return 0.8;
+    if (rir <= 0) return 1.5;
+    if (rir <= 3) return 1.0;
     if (rir === 4) return 0.5;
     return 0.25; // RIR 5+
   }
 
-  /* Effective sets contributed by ONE logged set to each muscle */
+  /* Set-type helpers. Warm-up sets are recorded in workout history but never
+     contribute to effective volume, progression targets or effort analytics. */
+  function isWorkingSet(set) { return !!set && set.type !== "warmup"; }
+  function isWarmup(set) { return !!set && set.type === "warmup"; }
+
+  /* Effective sets contributed by ONE logged set to each muscle.
+     Warm-ups contribute nothing; every other set type flows through the RIR
+     multiplier (failure sets carry rir 0, i.e. 150%). */
   function setContribution(exercise, set) {
+    if (!isWorkingSet(set)) return {};
     const m = rirMultiplier(set.rir);
     const out = {};
     exercise.primary.forEach(mu => { out[mu] = (out[mu] || 0) + 1.0 * m; });
@@ -1970,6 +2037,7 @@ const Engine = (() => {
     let low = 0, mid = 0, high = 0;
     workouts.filter(w => inCurrentWeek(w.date, now)).forEach(w => {
       w.entries.forEach(entry => entry.sets.forEach(s => {
+        if (!isWorkingSet(s)) return;
         if (s.reps < 5) low++;
         else if (s.reps <= 30) mid++;
         else high++;
@@ -1984,6 +2052,7 @@ const Engine = (() => {
     let hard = 0, moderate = 0, easy = 0, total = 0;
     workouts.filter(w => inCurrentWeek(w.date, now)).forEach(w => {
       w.entries.forEach(entry => entry.sets.forEach(s => {
+        if (!isWorkingSet(s)) return;
         total++;
         if (s.rir <= 1) hard++;
         else if (s.rir <= 3) moderate++;
@@ -2116,6 +2185,7 @@ const Engine = (() => {
   function repRangeRaw(workoutsLike) {
     let low = 0, mid = 0, high = 0;
     workoutsLike.forEach(w => w.entries.forEach(e => e.sets.forEach(s => {
+      if (!isWorkingSet(s)) return;
       if (s.reps < 5) low++; else if (s.reps <= 30) mid++; else high++;
     })));
     const total = low + mid + high;
@@ -2125,6 +2195,7 @@ const Engine = (() => {
   function rirProfileRaw(workoutsLike) {
     let hard = 0, moderate = 0, easy = 0, total = 0, sum = 0;
     workoutsLike.forEach(w => w.entries.forEach(e => e.sets.forEach(s => {
+      if (!isWorkingSet(s)) return;
       total++; sum += s.rir;
       if (s.rir <= 1) hard++; else if (s.rir <= 3) moderate++; else easy++;
     })));
@@ -2140,10 +2211,84 @@ const Engine = (() => {
     return t;
   }
 
+  /* ---------- Movement-pattern classifier ----------
+     Groups exercises by the movement they train so the generator can avoid
+     stacking near-identical lifts (e.g. barbell + dumbbell + machine flat press)
+     in one program. Two exercises sharing a pattern give largely redundant
+     stimulus; different patterns for the same muscle are complementary. */
+  const MAX_SETS_PER_MUSCLE_SESSION = 11;
+  function movementPattern(ex) {
+    const n = (ex.name || "").toLowerCase();
+    const p = (ex.primary && ex.primary[0]) || ex.type || "other";
+    const has = (...w) => w.some(x => n.includes(x));
+    switch (p) {
+      case "Chest":
+        if (has("fly", "pec deck", "pec")) return "chest_fly";
+        if (has("incline")) return "chest_incline_press";
+        return "chest_flat_press";
+      case "Lats":
+        if (has("pullover")) return "lat_pullover";
+        return "vertical_pull";
+      case "Back":
+        if (has("row")) return "horizontal_row";
+        if (has("extension", "hyper", "jefferson")) return "back_extension";
+        return "back_other";
+      case "Shoulders":
+        if (has("rear delt", "face pull", "reverse pec", "rear")) return "rear_delt";
+        if (has("lateral", "lean away", "lat raise")) return "lateral_raise";
+        return "overhead_press";
+      case "Biceps":
+        if (has("hammer")) return "curl_hammer";
+        if (has("preacher", "spider")) return "curl_short";
+        if (has("incline", "bayesian")) return "curl_long";
+        return "curl_standard";
+      case "Triceps":
+        if (has("pushdown", "pressdown")) return "tri_pushdown";
+        if (has("overhead", "skull", "extension")) return "tri_extension";
+        return "tri_press";
+      case "Quads":
+        if (has("extension")) return "leg_extension";
+        if (has("split", "lunge", "step")) return "lunge";
+        if (has("leg press", "hack")) return "leg_press";
+        return "squat";
+      case "Hamstrings":
+        if (has("curl")) return "leg_curl";
+        return "hip_hinge";
+      case "Glutes":
+        if (has("thrust", "bridge")) return "hip_thrust";
+        if (has("abduc", "abd", "lateral walk", "side")) return "hip_abduction";
+        if (has("adduc", "adduct")) return "hip_adduction";
+        if (has("kick")) return "glute_kickback";
+        if (has("extension", "hyper")) return "glute_extension";
+        if (has("step")) return "lunge";
+        return "glute_other";
+      case "Calves":
+        return "calf_raise";
+      case "Abs":
+        if (has("plank", "pallof", "dead bug", "copenhagen")) return "anti_core";
+        if (has("rot", "chop", "landmine")) return "core_rotation";
+        if (has("leg raise", "knee raise", "reverse")) return "lower_ab";
+        return "crunch";
+      default:
+        return p + "_" + (ex.type || "");
+    }
+  }
+
+  /* Effective sets a prescribed exercise block adds to each muscle, counting
+     direct (primary, 1.0) and indirect (secondary, 0.5) involvement. */
+  function blockMuscleSets(ex, sets) {
+    const out = {};
+    (ex.primary || []).forEach(m => { out[m] = (out[m] || 0) + sets; });
+    (ex.secondary || []).forEach(m => { out[m] = (out[m] || 0) + sets * 0.5; });
+    return out;
+  }
+
   /* ---------- Program generator ----------
-     Rules: hit exact weekly volume counting primary 1.0 / secondary 0.5;
-     as few exercises as possible; ≤6 sets per exercise; strict equipment filter
-     (bodyweight always allowed). Returns { days:[{name, items, why}], unmet }. */
+     Rules: hit weekly volume counting primary 1.0 / secondary 0.5; as few
+     exercises as possible; ≤6 sets per exercise; avoid redundant same-pattern
+     variations; strict equipment filter (bodyweight always allowed). After
+     distribution, cap each muscle at 11 effective sets per session (direct +
+     indirect) unless training only one day a week. Returns { days, unmet }. */
   function generatePlan({ priorities, targets, daysPerWeek, equipment, exercises }) {
     const pool = exercises.filter(e =>
       !e.manualOnly && (e.equip === "bodyweight" || equipment.includes(e.equip)));
@@ -2174,10 +2319,18 @@ const Engine = (() => {
       };
       const setsUsed = ex => chosen.filter(c => c.ex.id === ex.id).reduce((n, c) => n + c.sets, 0);
 
+      /* Movement patterns already represented in the program — used to steer
+         away from stacking redundant variations of the same lift. */
+      const usedPatterns = new Set(chosen.map(c => movementPattern(c.ex)));
+
       let cands = pool.filter(e => e.primary.includes(m) && !chosen.find(c => c.ex.id === e.id));
-      if (cands.length) {
-        cands.sort((a, b) => score(b, m) - score(a, m));
-        apply(cands[0], Math.max(2, Math.min(6, Math.round(need[m]))));
+      /* Prefer a movement pattern the program doesn't already train. If every
+         fresh pattern is exhausted, we deliberately fall through to repeating an
+         existing lift (more sets) rather than adding a near-identical exercise. */
+      const freshCands = cands.filter(e => !usedPatterns.has(movementPattern(e)));
+      if (freshCands.length) {
+        freshCands.sort((a, b) => score(b, m) - score(a, m));
+        apply(freshCands[0], Math.max(2, Math.min(6, Math.round(need[m]))));
         continue;
       }
       /* Equipment-limited: repeat an already-used primary mover as a second
@@ -2247,6 +2400,63 @@ const Engine = (() => {
         }
       });
     }
+
+    /* ---- Per-session volume cap ----
+       No muscle should receive more than 11 effective sets (direct + indirect)
+       in a single session. When exceeded, trim the most redundant contributor
+       first (a lift sharing its movement pattern with another that session),
+       otherwise shed excess direct volume. Skipped entirely when the user trains
+       only one day a week, since all volume necessarily lands in that session. */
+    const exById = id => exercises.find(e => e.id === id);
+    const sessionMuscleSets = day => {
+      const tot = {};
+      day.items.forEach(it => {
+        const ex = exById(it.exerciseId);
+        if (!ex) return;
+        const c = blockMuscleSets(ex, it.sets);
+        Object.keys(c).forEach(mu => { tot[mu] = (tot[mu] || 0) + c[mu]; });
+      });
+      return tot;
+    };
+    const enforceSessionCap = day => {
+      let guard = 0;
+      while (guard++ < 60) {
+        const tot = sessionMuscleSets(day);
+        const over = Object.keys(tot)
+          .filter(mu => tot[mu] > MAX_SETS_PER_MUSCLE_SESSION + 0.01)
+          .sort((a, b) => tot[b] - tot[a])[0];
+        if (!over) break;
+        const contributors = day.items
+          .map((it, idx) => ({ it, idx, ex: exById(it.exerciseId) }))
+          .filter(x => x.ex && blockMuscleSets(x.ex, 1)[over]);
+        const patternCount = {};
+        contributors.forEach(x => {
+          const pt = movementPattern(x.ex);
+          patternCount[pt] = (patternCount[pt] || 0) + 1;
+        });
+        /* Only trim redundant lifts or ones where this muscle is a primary
+           mover — never gut a compound purely to shave its indirect overflow. */
+        const trimmable = contributors.filter(x =>
+          patternCount[movementPattern(x.ex)] > 1 || (x.ex.primary || []).includes(over));
+        if (!trimmable.length) break;
+        trimmable.sort((a, b) => {
+          const ra = patternCount[movementPattern(a.ex)] > 1 ? 1 : 0;
+          const rb = patternCount[movementPattern(b.ex)] > 1 ? 1 : 0;
+          if (ra !== rb) return rb - ra;                                  // redundant patterns first
+          const pa = (a.ex.primary || []).includes(over) ? 1 : 0;
+          const pb = (b.ex.primary || []).includes(over) ? 1 : 0;
+          if (pa !== pb) return pa - pb;                                  // trim assistance before the main lift
+          return a.it.sets - b.it.sets;                                   // then the smaller block
+        });
+        const target = trimmable[0];
+        target.it.sets -= 1;
+        if (target.it.sets <= 0) {
+          day.items.splice(target.idx, 1);
+          day.why.splice(target.idx, 1);
+        }
+      }
+    };
+    if (daysPerWeek > 1) days.forEach(enforceSessionCap);
 
     return { days, unmet };
   }
@@ -2331,8 +2541,10 @@ const Engine = (() => {
   /* ---------- Progression ---------- */
   function bestSetOf(entry) {
     if (!entry || !entry.sets.length) return null;
-    return entry.sets.reduce((a, b) =>
-      (b.load > a.load || (b.load === a.load && b.reps > a.reps)) ? b : a, entry.sets[0]);
+    const working = entry.sets.filter(isWorkingSet);
+    if (!working.length) return null;
+    return working.reduce((a, b) =>
+      (b.load > a.load || (b.load === a.load && b.reps > a.reps)) ? b : a, working[0]);
   }
 
   /* Most recent logged entry for an exercise before a given week */
@@ -2402,7 +2614,7 @@ const Engine = (() => {
     for (const log of logs) {
       const entry = log.entries.find(e => e.exerciseId === exerciseId);
       if (!entry) continue;
-      const sets = entry.sets.filter(s => s.reps > 0);
+      const sets = entry.sets.filter(s => s.reps > 0 && isWorkingSet(s));
       if (!sets.length) continue;
       const prescribed = item ? (isDeloadWeek(meso, w) ? Math.max(1, Math.ceil(item.sets / 2)) : item.sets) : sets.length;
       const repLo = item ? item.repLo : 0, repHi = item ? item.repHi : Infinity;
@@ -2432,7 +2644,7 @@ const Engine = (() => {
       prescribed += deload ? Math.max(1, Math.ceil(it.sets / 2)) : it.sets));
     let done = 0;
     meso.logs.filter(l => l.week === w).forEach(l =>
-      l.entries.forEach(e => done += e.sets.filter(s => s.reps > 0).length));
+      l.entries.forEach(e => done += e.sets.filter(s => s.reps > 0 && isWorkingSet(s)).length));
     return prescribed ? Math.min(1, done / prescribed) : 0;
   }
 
@@ -3407,7 +3619,8 @@ const Engine = (() => {
   }
 
   return {
-    rirMultiplier, setContribution, weeklyEffectiveSets, workoutEffectiveSets,
+    rirMultiplier, setContribution, isWorkingSet, isWarmup, movementPattern, blockMuscleSets,
+    weeklyEffectiveSets, workoutEffectiveSets,
     muscleStatus, repRangeAnalysis, rirProfile, hyperCoaching, overloadSuggestions,
     weekStart, inCurrentWeek,
     effectiveSetsRaw, repRangeRaw, rirProfileRaw,
@@ -4563,14 +4776,42 @@ const Hyper = (() => {
           exerciseId: it.exerciseId,
           sets: Array.from({ length: nSets }, (_, si) => {
             const s = dec.suggest(si);
-            return { load: s.load, reps: 0, rir: s.rir };
+            return { load: s.load, reps: 0, rir: s.rir, type: "normal" };
           })
         };
       })
     };
 
-    /* A set counts as completed once it has reps (tap = auto-fill defaults). */
-    const isDone = set => set.reps > 0;
+    /* ---- Set types (Hevy-style) ----
+       normal  → standard load/reps/RIR, counts toward volume & progression
+       warmup  → recorded in history but excluded from volume & progression
+       drop    → one set logged as several weight×rep segments; counts as one
+       failure → taken to true failure (RIR forced to 0); no rep target needed */
+    const SET_TYPE_META = {
+      normal:  { label: "Normal",   short: "",  hint: "" },
+      warmup:  { label: "Warm-up",  short: "W", hint: "Recorded, but doesn't count toward weekly volume." },
+      drop:    { label: "Drop set", short: "D", hint: "Log each weight drop as a segment — counts as one effective set." },
+      failure: { label: "Failure",  short: "F", hint: "Taken to failure — counts at 0 RIR. Record reps after the set." }
+    };
+    const typeOf = set => set.type || "normal";
+    const shortOf = set => SET_TYPE_META[typeOf(set)].short;
+
+    /* Whether a set has actually been performed (used for the done-count and on
+       save). Drop sets are performed once any segment has reps. */
+    const setPerformed = set => {
+      if (typeOf(set) === "drop") return (set.segments || []).some(g => g.reps > 0) || set.reps > 0;
+      return set.reps > 0;
+    };
+    /* Keep a drop set's headline load/reps in sync with its first segment so
+       progression, history and best-set logic keep working unchanged. */
+    const syncDrop = set => {
+      if (typeOf(set) === "drop" && set.segments && set.segments.length) {
+        set.load = set.segments[0].load || 0;
+        set.reps = set.segments[0].reps || 0;
+      }
+    };
+    /* A set counts as completed once it has been performed. */
+    const isDone = setPerformed;
 
     /* Backdating: any day within this training week, never the future */
     const wb = Engine.mesoWeekBounds(M, w);
@@ -4616,16 +4857,24 @@ const Hyper = (() => {
           el("span.dot"), el("span", { style: "font-size:13.5px;" }, target.text)));
 
         /* --- set bubbles (suggestions are per set — hard weeks bump only sets 1–2) --- */
+        const bubbleLabel = (set, si) => {
+          const t = typeOf(set);
+          if (t === "normal") return isDone(set) ? "✓" : String(si + 1);
+          return shortOf(set); // W / D / F — colour (.done) still shows completion
+        };
         const bubbles = el("div.bubble-row", null,
           entry.sets.map((set, si) => {
             const done = isDone(set);
+            const t = typeOf(set);
             const sSug = dec.suggest(si);
-            return el(`button.set-bubble${done ? ".done" : ""}`, {
+            return el(`button.set-bubble${done ? ".done" : ""}${t !== "normal" ? ".set-typed" : ""}`, {
               title: done
-                ? `Set ${si + 1}: ${set.load ? set.load + units : "BW"} × ${set.reps} @ RIR ${set.rir} — tap to edit`
-                : `Tap to complete set ${si + 1} (${sSug.load ? sSug.load + units : "BW"} × ${sSug.reps} @ RIR ${sSug.rir})`,
+                ? `${SET_TYPE_META[t].label} · Set ${si + 1}: ${set.load ? set.load + units : "BW"} × ${set.reps}${t === "failure" ? " to failure" : t === "warmup" ? " (warm-up)" : ` @ RIR ${set.rir}`} — tap to edit`
+                : t === "normal"
+                  ? `Tap to complete set ${si + 1} (${sSug.load ? sSug.load + units : "BW"} × ${sSug.reps} @ RIR ${sSug.rir})`
+                  : `${SET_TYPE_META[t].label} — tap to fill in the details`,
               onclick: () => {
-                if (!done) {
+                if (!done && t === "normal") {
                   set.load = set.load || sSug.load;
                   set.reps = sSug.reps;
                   set.rir = (set.rir === undefined || set.rir === null) ? sSug.rir : set.rir;
@@ -4635,48 +4884,92 @@ const Hyper = (() => {
                   redraw(si);
                 }
               }
-            }, done ? "✓" : String(si + 1));
+            }, bubbleLabel(set, si));
           }));
         block.appendChild(bubbles);
 
         /* --- detailed edit table (only when editing) --- */
         if (editOpen[ei]) {
-          const tbody = el("tbody");
+          /* Compact, labelled number field for the stacked set editor. */
+          const fieldNum = (labelTxt, value, onChange, step, opts = {}) => {
+            const inp = el("input.set-field-input", {
+              type: "number", value: value || "", min: 0, step, inputmode: "decimal",
+              oninput: e => { onChange(e.target.value === "" ? 0 : Number(e.target.value)); scheduleHeaderRefresh(); }
+            });
+            if (opts.focus) setTimeout(() => { inp.focus(); inp.select && inp.select(); }, 0);
+            return el("label.set-field", null, el("span", null, labelTxt), inp);
+          };
+
+          const typeSelect = (set, si) => el("select.set-type-select", {
+            onchange: e => {
+              set.type = e.target.value;
+              if (set.type === "failure") set.rir = 0;
+              if (set.type === "drop" && (!set.segments || !set.segments.length)) {
+                set.segments = [{ load: set.load || 0, reps: set.reps || 0 }, { load: 0, reps: 0 }];
+              }
+              if (set.type === "drop") syncDrop(set);
+              redraw(si);
+            }
+          }, Object.keys(SET_TYPE_META).map(id =>
+            el("option", { value: id, selected: typeOf(set) === id }, SET_TYPE_META[id].label)));
+
+          const setFields = (set, si, focus) => {
+            const t = typeOf(set);
+            if (t === "drop") {
+              const wrap = el("div.drop-segs");
+              (set.segments || []).forEach((g, gi) => {
+                wrap.appendChild(el("div.drop-seg", null,
+                  el("span.drop-seg-num", null, `Drop ${gi + 1}`),
+                  fieldNum(`Load (${units})`, g.load, v => { g.load = v; syncDrop(set); }, 0.5),
+                  el("span.drop-x", null, "×"),
+                  fieldNum("Reps", g.reps, v => { g.reps = v; syncDrop(set); }, 1, { focus: focus && gi === 0 }),
+                  set.segments.length > 1 ? el("button.btn.btn-danger-ghost.btn-sm.drop-del", {
+                    onclick: () => { set.segments.splice(gi, 1); syncDrop(set); redraw(si); }
+                  }, "✕") : null));
+              });
+              wrap.appendChild(el("div.drop-foot", null,
+                el("button.btn.btn-ghost.btn-sm", {
+                  onclick: () => { set.segments.push({ load: 0, reps: 0 }); redraw(si); }
+                }, "+ Drop segment"),
+                fieldNum("RIR", set.rir, v => { set.rir = v; }, 1)));
+              return wrap;
+            }
+            const fields = [fieldNum(`Load (${units})`, set.load, v => { set.load = v; }, 0.5)];
+            fields.push(fieldNum(t === "failure" ? "Reps done" : "Reps", set.reps, v => { set.reps = v; }, 1, { focus }));
+            if (t === "normal") fields.push(fieldNum("RIR", set.rir, v => { set.rir = v; }, 1));
+            if (t === "failure") fields.push(el("label.set-field", null, el("span", null, "RIR"), el("div.rir-fixed", null, "0")));
+            return el("div.set-field-row", null, fields);
+          };
+
+          const list = el("div.set-edit-list");
           entry.sets.forEach((set, si) => {
-            const repsInput = numInput(set.reps, v => { set.reps = v; }, 1);
-            if (focusSet === si) setTimeout(() => { repsInput.focus(); repsInput.select && repsInput.select(); }, 0);
-            tbody.appendChild(el("tr", { style: focusSet === si ? "background:var(--brand-softer);" : "" },
-              el("td.set-num", null, String(si + 1)),
-              el("td", null, numInput(set.load, v => { set.load = v; }, 0.5)),
-              el("td", null, repsInput),
-              el("td", null, numInput(set.rir, v => { set.rir = v; }, 1)),
-              el("td", null, el("button.btn.btn-danger-ghost.btn-sm", {
-                onclick: () => { entry.sets.splice(si, 1); redraw(); }
-              }, "✕"))));
+            const t = typeOf(set);
+            list.appendChild(el(`div.set-edit${focusSet === si ? ".focused" : ""}${t !== "normal" ? ".set-edit-typed" : ""}`, null,
+              el("div.set-edit-top", null,
+                el("span.set-num", null, String(si + 1)),
+                typeSelect(set, si),
+                el("button.btn.btn-danger-ghost.btn-sm", {
+                  onclick: () => { entry.sets.splice(si, 1); redraw(); }
+                }, "✕")),
+              setFields(set, si, focusSet === si),
+              SET_TYPE_META[t].hint ? el("p.set-edit-hint.faint", null, SET_TYPE_META[t].hint) : null));
           });
-          block.appendChild(el("table.set-table", null,
-            el("thead", null, el("tr", null,
-              el("th", null, "Set"), el("th", null, `Load (${units})`),
-              el("th", null, "Reps"), el("th", null, "RIR"), el("th"))),
-            tbody));
-          block.appendChild(el("div", { style: "display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;" },
+          block.appendChild(list);
+          block.appendChild(el("div", { style: "display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;" },
             el("button.btn.btn-ghost.btn-sm", {
               onclick: () => {
-                const last = [...entry.sets].reverse().find(isDone) || entry.sets[entry.sets.length - 1];
-                entry.sets.push({ load: last ? last.load : sug.load, reps: 0, rir: last ? last.rir : sug.rir });
+                const last = [...entry.sets].reverse().find(s => typeOf(s) === "normal" && isDone(s)) || entry.sets[entry.sets.length - 1];
+                entry.sets.push({ load: last ? last.load : sug.load, reps: 0, rir: last ? last.rir : sug.rir, type: "normal" });
                 redraw();
               }
             }, "+ Add set"),
             entry.sets.length > 1 ? el("button.btn.btn-ghost.btn-sm", {
-              title: "Copy set 1's load, reps and RIR into every set of this exercise",
+              title: "Copy set 1's load, reps and RIR into every normal set",
               onclick: () => {
                 const source = entry.sets[0];
-                entry.sets = entry.sets.map(set => ({
-                  ...set,
-                  load: source.load,
-                  reps: source.reps,
-                  rir: source.rir
-                }));
+                entry.sets = entry.sets.map((set, i) =>
+                  i === 0 || typeOf(set) !== "normal" ? set
+                    : { ...set, load: source.load, reps: source.reps, rir: source.rir });
                 redraw();
               }
             }, "Copy set 1 to all") : null,
@@ -4684,7 +4977,7 @@ const Hyper = (() => {
               onclick: () => { editOpen[ei] = false; redraw(); }
             }, "Collapse")));
           block.appendChild(el("p.faint", { style: "margin:8px 0 0;" },
-            "A set counts once reps are entered. Leave reps at 0 to keep it planned but not done."));
+            "A set counts once reps are entered. Warm-ups are saved to history but don't add to your weekly volume."));
         }
       }
 
@@ -4706,9 +4999,12 @@ const Hyper = (() => {
           const bub = block.querySelector(".bubble-row");
           if (bub) {
             [...bub.children].forEach((b, si) => {
-              const done = isDone(entry.sets[si] || {});
+              const set = entry.sets[si] || {};
+              const done = isDone(set);
               b.classList.toggle("done", done);
-              b.textContent = done ? "✓" : String(si + 1);
+              const t = set.type || "normal";
+              b.textContent = t === "normal" ? (done ? "✓" : String(si + 1))
+                : (SET_TYPE_META[t] ? SET_TYPE_META[t].short : String(si + 1));
             });
           }
         }, 250);
@@ -4719,8 +5015,10 @@ const Hyper = (() => {
     });
 
     function save() {
-      draft.entries = draft.entries.map(e => ({ ...e, sets: e.sets.filter(s => s.reps > 0) }))
-        .filter(e => e.sets.length);
+      draft.entries = draft.entries.map(e => ({
+        ...e,
+        sets: e.sets.map(s => { syncDrop(s); return s; }).filter(setPerformed)
+      })).filter(e => e.sets.length);
       if (!draft.entries.length) { toast("Enter reps for at least one set"); return; }
       if (when) draft.date = when.getDate();
       const idx = M.logs.findIndex(l => l.id === draft.id);
@@ -4744,7 +5042,19 @@ const Hyper = (() => {
               `+${Math.round(added[m] * 10) / 10} effective sets · ${remaining > 0 ? remaining + " to go this week" : "weekly target reached"}`),
             statusBadge(status));
         });
-      modal(`${day.name} complete`, el("div", null, rows),
+
+      /* Set-type breakdown — makes the make-up of the session explicit. */
+      const counts = { normal: 0, warmup: 0, drop: 0, failure: 0 };
+      log.entries.forEach(e => e.sets.forEach(s => { counts[s.type || "normal"] = (counts[s.type || "normal"] || 0) + 1; }));
+      const typeChips = [
+        counts.normal ? `${counts.normal} working` : null,
+        counts.failure ? `${counts.failure} to failure` : null,
+        counts.drop ? `${counts.drop} drop` : null,
+        counts.warmup ? `${counts.warmup} warm-up${counts.warmup > 1 ? "s" : ""} (not counted)` : null
+      ].filter(Boolean);
+      const typeLine = el("p.faint", { style: "margin:0 0 10px;" }, "Sets: " + typeChips.join(" · "));
+
+      modal(`${day.name} complete`, el("div", null, typeLine, rows),
         [el("button.btn", { onclick: () => { closeModal(); viewWeek = w; App.nav("hyper"); } }, "Done")]);
     }
 
