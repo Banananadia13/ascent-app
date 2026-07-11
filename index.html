@@ -5522,6 +5522,50 @@ const Hyper = (() => {
           statusBadge(status, s.sets > 0 ? `${s.sets} sets` : isCur ? "This week" : "Missed"));
       }));
 
+    /* ---------- per-week session log ----------
+       Every completed session, grouped by mesocycle week, newest week first —
+       so finishing a workout adds a dated entry to that week's progress. */
+    const sessionLogCard = (() => {
+      const weekBlocks = [];
+      for (let wk = nWeeks - 1; wk >= 0; wk--) {
+        const { start, end } = Engine.mesoWeekBounds(M, wk);
+        const planned = M.logs.filter(l => l.week === wk).map(l => ({ log: l, kind: "planned" }));
+        const extra = adhoc.filter(x => { const t = new Date(x.date).getTime(); return t >= start && t < end; })
+          .map(l => ({ log: l, kind: "extra" }));
+        const sessions = planned.concat(extra).sort((a, b) => new Date(a.log.date) - new Date(b.log.date));
+        if (!sessions.length) continue;
+        const rows = sessions.map(({ log, kind }) => {
+          const name = kind === "planned"
+            ? (M.template[log.day] ? M.template[log.day].name : "Session")
+            : (log.name || "Extra work");
+          const workingSets = log.entries.reduce((n, e) =>
+            n + e.sets.filter(s => s.reps > 0 && Engine.isWorkingSet(s)).length, 0);
+          const eff = Engine.effectiveSetsRaw([log], getEx);
+          const effTotal = Math.round(Object.values(eff).reduce((a, b) => a + b, 0) * 10) / 10;
+          const nEx = log.entries.length;
+          return el("div.item-row", null,
+            el("div", { style: "flex:1;" },
+              el("div", { style: "display:flex;align-items:center;gap:8px;" },
+                el("b", null, name),
+                kind === "extra" ? el("span.muscle-goal", null, "Extra") : null),
+              el("div.meta", null,
+                `${fmtDate(log.date)} · ${nEx} exercise${nEx === 1 ? "" : "s"} · ${workingSets} set${workingSets === 1 ? "" : "s"} · ${effTotal} effective`)),
+            el("button.btn.btn-ghost.btn-sm", {
+              onclick: () => App.nav("hyper", kind === "planned" ? `workout:${wk}:${log.day}` : `editextra:${log.id}`)
+            }, "View"));
+        });
+        weekBlocks.push(el("div", { style: "margin-bottom:4px;" },
+          el("div.field-label", { style: "margin:12px 0 4px;" },
+            `Week ${wk + 1}` + (Engine.isDeloadWeek(M, wk) ? " · Deload" : "") + (wk === cw && !finished ? " · In progress" : "")),
+          rows));
+      }
+      return el("div.card", null,
+        el("div.card-title", null, el("h3", null, "Session log"),
+          el("span.hint", null, "each session you've completed, by week")),
+        weekBlocks.length ? weekBlocks
+          : el("div.empty-state", null, "No sessions logged yet — finish a workout and it'll appear here for that week."));
+    })();
+
     /* ---------- personal records ---------- */
     const prRow = (ico, label, val) => el("div.pr-row", null,
       el("span.pr-ico", null, ico),
@@ -5558,6 +5602,7 @@ const Hyper = (() => {
         el("button.btn.btn-ghost.btn-sm", { onclick: () => App.nav("hyper") }, "← Back")),
       overview,
       workCard,
+      sessionLogCard,
       filterCard,
       el("div.grid-2", null,
         chartCard("Weekly volume", `${setsLabel.toLowerCase()} per week`, volChart),
@@ -8026,11 +8071,50 @@ const Strength = (() => {
       el("div.card-title", null, el("h3", null, "Coaching insights")),
       insights.map(m => el(`div.coach-msg.status-${m.tone}`, null, el("span.dot"), el("span", null, m.text))));
 
+    /* ---------- per-week session log ----------
+       Every completed session, grouped by block week, newest week first — so
+       finishing a session adds a dated entry to that week's progress. */
+    const sessionLogCard = (() => {
+      const weekBlocks = [];
+      for (let wk = nWeeks - 1; wk >= 0; wk--) {
+        const sessions = M.logs.filter(l => l.week === wk)
+          .slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+        if (!sessions.length) continue;
+        const rows = sessions.map(log => {
+          const name = M.template[log.day] ? M.template[log.day].name : "Session";
+          let sets = 0, tonnage = 0;
+          log.entries.forEach(e => e.sets.forEach(s => {
+            if (s.reps > 0) { sets++; tonnage += (s.load || 0) * s.reps; }
+          }));
+          const nLifts = log.entries.length;
+          return el("div.item-row", null,
+            el("div", { style: "flex:1;" },
+              el("b", null, name),
+              el("div.meta", null,
+                `${fmtDate(log.date)} · ${nLifts} lift${nLifts === 1 ? "" : "s"} · ${sets} set${sets === 1 ? "" : "s"}` +
+                (tonnage ? ` · ${Math.round(tonnage).toLocaleString()} ${u} lifted` : ""))),
+            el("button.btn.btn-ghost.btn-sm", {
+              onclick: () => App.nav("strength", `workout:${wk}:${log.day}`)
+            }, "View"));
+        });
+        weekBlocks.push(el("div", { style: "margin-bottom:4px;" },
+          el("div.field-label", { style: "margin:12px 0 4px;" },
+            `Week ${wk + 1}` + (Engine.isDeloadWeek(M, wk) ? " · Deload" : "") + (wk === cw && !finished ? " · In progress" : "")),
+          rows));
+      }
+      return el("div.card", null,
+        el("div.card-title", null, el("h3", null, "Session log"),
+          el("span.hint", null, "each session you've completed, by week")),
+        weekBlocks.length ? weekBlocks
+          : el("div.empty-state", null, "No sessions logged yet — finish a session and it'll appear here for that week."));
+    })();
+
     container.appendChild(el("div", null,
       el("div.section-head", null,
         el("h2", null, "Progress"),
         el("button.btn.btn-ghost.btn-sm", { onclick: () => App.nav("strength") }, "← Back")),
       overview,
+      sessionLogCard,
       liftCard,
       el("div.grid-2", null, workCard, prCard),
       insightsCard));
@@ -9241,6 +9325,51 @@ const Bone = (() => {
 
     const sessionsDone = M.logs.length;
     const planned = M.template.length * M.weeks;
+    const cw = Engine.mesoCurrentWeek(M);
+    const finished = Engine.mesoFinished(M);
+
+    /* ---------- per-week session log ----------
+       Every completed session, grouped by block week, newest week first — so
+       finishing a session adds a dated entry (with its traffic light) to that
+       week's progress. */
+    const lightStatus = { red: "red", amber: "yellow", green: "green" };
+    const sessionLogCard = (() => {
+      const weekBlocks = [];
+      for (let wk = nWeeks - 1; wk >= 0; wk--) {
+        const sessions = M.logs.filter(l => l.week === wk)
+          .slice().sort((a, b) => new Date(a.date) - new Date(b.date));
+        if (!sessions.length) continue;
+        const rows = sessions.map(log => {
+          const name = M.template[log.day] ? M.template[log.day].name : "Session";
+          const nStr = (log.strength || []).filter(e => (e.sets || []).some(s => s.reps > 0)).length;
+          const parts = [];
+          if (nStr) parts.push(`${nStr} strength`);
+          if (log.impact && log.impact.done) parts.push(`impact${log.impact.contacts ? ` (${log.impact.contacts} contacts)` : ""}`);
+          if (log.balance && log.balance.done) parts.push("balance");
+          const lights = BEngine.sessionLights(log);
+          const overall = lights.includes("red") ? "red" : lights.includes("amber") ? "amber" : lights.length ? "green" : null;
+          return el("div.item-row", null,
+            el("div", { style: "flex:1;" },
+              el("b", null, name),
+              el("div.meta", null, `${fmtDate(log.date)}${parts.length ? " · " + parts.join(" · ") : ""}`)),
+            el("div", { style: "display:flex;gap:6px;flex:none;align-items:center;" },
+              overall ? el(`span.badge.status-${lightStatus[overall]}`, null, el("span.dot"),
+                overall === "green" ? "All green" : overall === "amber" ? "Amber" : "Red") : null,
+              el("button.btn.btn-ghost.btn-sm", {
+                onclick: () => App.nav("bone", `session:${wk}:${log.day}`)
+              }, "View")));
+        });
+        weekBlocks.push(el("div", { style: "margin-bottom:4px;" },
+          el("div.field-label", { style: "margin:12px 0 4px;" },
+            `Week ${wk + 1}` + (wk === cw && !finished ? " · In progress" : "")),
+          rows));
+      }
+      return el("div.card", null,
+        el("div.card-title", null, el("h3", null, "Session log"),
+          el("span.hint", null, "each session you've completed, by week")),
+        weekBlocks.length ? weekBlocks
+          : el("div.empty-state", null, "No sessions logged yet — finish a session and it'll appear here for that week."));
+    })();
 
     container.appendChild(el("div", null,
       el("div.section-head", null,
@@ -9253,6 +9382,7 @@ const Bone = (() => {
           el("div.stat-tile", null, el("div.num", null, `L${P.impactLevel}`), el("div.lbl", null, "impact ladder")),
           el("div.stat-tile", null, el("div.num", null, `L${P.balanceLevel}`), el("div.lbl", null, "balance ladder")),
           el("div.stat-tile", null, el("div.num", null, String(BEngine.flareCount(M))), el("div.lbl", null, "red flags (14 days)")))),
+      sessionLogCard,
       el("div.grid-2", null,
         el("div.card", null,
           el("div.card-title", null, el("h3", null, "Bone loading by week"), el("span.hint", null, "hip vs spine points")),
