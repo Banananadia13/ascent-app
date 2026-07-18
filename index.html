@@ -820,6 +820,205 @@ body.phone-mode .wizard-actions .btn { padding: 9px 16px; }
   body.phone-mode #statusbar { display: none; }
   body.phone-mode .topbar { padding-top: 0; }
 }
+
+/* ============================================================
+   REHAB / PERSISTENT PAIN — calm design layer (.rehab-zen)
+   A softer visual world for the pain module: drifting light,
+   organic cards, floating choices, gentle motion. Inspired by
+   How We Feel × Apple Health × Headspace. Scoped so the rest
+   of the app is untouched.
+   ============================================================ */
+.rehab-zen {
+  /* palette: soft whites, warm greys, mist blue, sage, muted teal, amber, subtle coral */
+  --rz-mist: #7f9fbd;
+  --rz-mist-deep: #5c80a3;
+  --rz-mist-soft: #eaf1f7;
+  --rz-sage: #7d9a82;
+  --rz-sage-soft: #ecf2ec;
+  --rz-teal: #5f8f8c;
+  --rz-teal-soft: #e7f0ef;
+  --rz-amber: #d9a662;
+  --rz-amber-soft: #f9f0e1;
+  --rz-coral: #d8907e;
+  --rz-coral-soft: #f9ebe6;
+  --rz-ink: #39424b;
+  --rz-ink-soft: #66707a;
+  --rz-cloud: #fdfdfb;
+  --rz-shadow: 0 6px 24px rgba(92, 118, 143, .08), 0 1px 3px rgba(92, 118, 143, .06);
+  --rz-shadow-hover: 0 14px 34px rgba(92, 118, 143, .13), 0 2px 6px rgba(92, 118, 143, .07);
+  position: relative;
+  color: var(--rz-ink);
+  animation: rz-fade .6s ease both;
+}
+
+/* ---- drifting sky: soft light that slowly breathes behind everything ---- */
+.rz-sky {
+  position: absolute; inset: -60px -40px auto -40px; height: 520px;
+  pointer-events: none; z-index: 0; overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent);
+          mask-image: linear-gradient(180deg, #000 55%, transparent);
+}
+.rz-blob { position: absolute; border-radius: 50%; filter: blur(56px); opacity: .5; }
+.rz-b1 { width: 420px; height: 320px; left: -80px; top: -60px;
+  background: radial-gradient(circle, #cfdfed 0%, transparent 68%);
+  animation: rz-drift-a 26s ease-in-out infinite alternate; }
+.rz-b2 { width: 460px; height: 340px; right: -100px; top: -30px;
+  background: radial-gradient(circle, #dde9dc 0%, transparent 68%);
+  animation: rz-drift-b 32s ease-in-out infinite alternate; }
+.rz-b3 { width: 340px; height: 260px; left: 34%; top: 60px;
+  background: radial-gradient(circle, #f4e7d2 0%, transparent 70%);
+  opacity: .38; animation: rz-drift-c 38s ease-in-out infinite alternate; }
+.rehab-zen > :not(.rz-sky) { position: relative; z-index: 1; }
+
+/* ---- typography: warm, spacious, unhurried ---- */
+.rehab-zen h2 { font-size: 25px; font-weight: 640; letter-spacing: -.015em; color: var(--rz-ink); line-height: 1.22; }
+.rehab-zen h3 { color: var(--rz-ink); font-weight: 640; }
+.rehab-zen .muted { color: var(--rz-ink-soft); line-height: 1.6; }
+.rehab-zen .field-label, .rehab-zen label.field > span { color: var(--rz-ink-soft); font-weight: 600; }
+
+/* ---- cards: rounded, weightless, softly rising into view ---- */
+.rehab-zen .card {
+  border: none; border-radius: 24px;
+  background: linear-gradient(180deg, #ffffff 0%, var(--rz-cloud) 100%);
+  box-shadow: var(--rz-shadow);
+  padding: 22px 24px;
+  transition: transform .4s cubic-bezier(.22,1,.36,1), box-shadow .4s ease;
+  animation: rz-rise .6s cubic-bezier(.22,1,.36,1) both;
+}
+.rehab-zen .card:hover { transform: translateY(-2px); box-shadow: var(--rz-shadow-hover); }
+.rehab-zen .card:nth-child(2), .rehab-zen .grid-2 > div > .card:nth-child(1) { animation-delay: .05s; }
+.rehab-zen .card:nth-child(3), .rehab-zen .grid-2 > div > .card:nth-child(2) { animation-delay: .12s; }
+.rehab-zen .card:nth-child(4), .rehab-zen .grid-2 > div > .card:nth-child(3) { animation-delay: .19s; }
+.rehab-zen .card:nth-child(5), .rehab-zen .grid-2 > div > .card:nth-child(4) { animation-delay: .26s; }
+.rehab-zen .exercise-block {
+  border: none; border-radius: 20px; background: #fff;
+  box-shadow: var(--rz-shadow); padding: 18px 20px;
+  animation: rz-rise .6s cubic-bezier(.22,1,.36,1) both;
+}
+
+/* ---- notices: gradient light, no borders ---- */
+.rehab-zen .notice-calm, body.rehab-mode .modal .notice-calm {
+  background: linear-gradient(135deg, var(--rz-mist-soft) 0%, var(--rz-teal-soft) 100%);
+  border: none; border-radius: 20px; padding: 15px 18px; color: var(--rz-ink);
+}
+.rehab-zen .notice {
+  background: linear-gradient(135deg, var(--rz-amber-soft) 0%, #fdf6ec 100%);
+  border: none; border-radius: 20px; padding: 15px 18px;
+}
+
+/* ---- chips become floating choice cards ---- */
+.rehab-zen .chip, body.rehab-mode .modal .chip {
+  border: none; background: #fff; color: var(--rz-ink-soft);
+  border-radius: 16px; padding: 10px 17px; font-size: 13.5px;
+  box-shadow: 0 2px 10px rgba(92,118,143,.09);
+  transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s ease, background .3s ease, color .3s ease;
+}
+.rehab-zen .chip:hover, body.rehab-mode .modal .chip:hover {
+  transform: translateY(-2px); box-shadow: 0 8px 18px rgba(92,118,143,.14); color: var(--rz-ink);
+}
+.rehab-zen .chip.selected.chip-rehab, .rehab-zen .chip.selected,
+body.rehab-mode .modal .chip.selected.chip-rehab, body.rehab-mode .modal .chip.selected {
+  background: linear-gradient(135deg, var(--rz-mist) 0%, var(--rz-teal) 100%);
+  color: #fff; box-shadow: 0 8px 20px rgba(95,143,140,.32);
+  transform: translateY(-1px);
+}
+
+/* ---- buttons: soft gradients, gentle response ---- */
+.rehab-zen .btn-rehab, body.rehab-mode .modal .btn-rehab {
+  background: linear-gradient(135deg, var(--rz-mist-deep) 0%, var(--rz-teal) 100%);
+  box-shadow: 0 6px 18px rgba(95,143,140,.28);
+  transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s ease, filter .25s ease;
+}
+.rehab-zen .btn-rehab:hover, body.rehab-mode .modal .btn-rehab:hover {
+  background: linear-gradient(135deg, var(--rz-mist-deep) 0%, var(--rz-teal) 100%);
+  filter: brightness(1.06); transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(95,143,140,.34);
+}
+.rehab-zen .btn-rehab:active, body.rehab-mode .modal .btn-rehab:active { transform: translateY(0) scale(.985); }
+.rehab-zen .btn-secondary { border: none; box-shadow: 0 2px 10px rgba(92,118,143,.10); }
+.rehab-zen .btn-secondary:hover { background: #fff; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(92,118,143,.14); }
+
+/* ---- traffic lights: softened to sage / amber / coral, breathing when chosen ---- */
+.rehab-zen .tl-btn, body.rehab-mode .tl-btn {
+  border: none; border-radius: 18px; background: #fff;
+  box-shadow: 0 2px 10px rgba(92,118,143,.09); padding: 14px 10px;
+  transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s ease, background .3s ease;
+}
+.rehab-zen .tl-btn:hover, body.rehab-mode .tl-btn:hover {
+  transform: translateY(-2px); box-shadow: 0 8px 18px rgba(92,118,143,.14);
+}
+.rehab-zen .tl-green .tl-dot, body.rehab-mode .tl-green .tl-dot { background: var(--rz-sage); }
+.rehab-zen .tl-amber .tl-dot, body.rehab-mode .tl-amber .tl-dot { background: var(--rz-amber); }
+.rehab-zen .tl-red .tl-dot,  body.rehab-mode .tl-red .tl-dot  { background: var(--rz-coral); }
+.rehab-zen .tl-btn.selected, body.rehab-mode .tl-btn.selected { transform: translateY(-1px); }
+.rehab-zen .tl-btn.selected.tl-green, body.rehab-mode .tl-btn.selected.tl-green { background: var(--rz-sage-soft); box-shadow: 0 8px 20px rgba(125,154,130,.25); }
+.rehab-zen .tl-btn.selected.tl-amber, body.rehab-mode .tl-btn.selected.tl-amber { background: var(--rz-amber-soft); box-shadow: 0 8px 20px rgba(217,166,98,.25); }
+.rehab-zen .tl-btn.selected.tl-red,  body.rehab-mode .tl-btn.selected.tl-red  { background: var(--rz-coral-soft); box-shadow: 0 8px 20px rgba(216,144,126,.25); }
+.rehab-zen .tl-btn.selected .tl-dot, body.rehab-mode .tl-btn.selected .tl-dot { animation: rz-breathe 2.6s ease-in-out infinite; }
+
+/* ---- sliders & inputs ---- */
+.rehab-zen input[type="range"], body.rehab-mode .modal input[type="range"] { accent-color: var(--rz-teal); }
+.rehab-zen .range-value, body.rehab-mode .modal .range-value {
+  color: var(--rz-teal); background: var(--rz-teal-soft); border-radius: 10px;
+  transition: transform .2s ease;
+}
+.rehab-zen input[type="text"]:focus, .rehab-zen input:focus, .rehab-zen select:focus, .rehab-zen textarea:focus {
+  border-color: var(--rz-mist); box-shadow: 0 0 0 4px var(--rz-mist-soft);
+}
+.rehab-zen input[type="text"], .rehab-zen input[type="number"], .rehab-zen select, .rehab-zen textarea {
+  border-radius: 14px; border-color: #e6e9ec;
+}
+
+/* ---- wizard journey dots: light gently filling the path ---- */
+.rehab-zen .wizard-progress.rehab span { height: 6px; background: #e6ebef; transition: background .5s ease; }
+.rehab-zen .wizard-progress.rehab span.done {
+  background: linear-gradient(90deg, var(--rz-mist) 0%, var(--rz-teal) 100%);
+  animation: rz-grow-x .5s cubic-bezier(.22,1,.36,1) both;
+}
+
+/* ---- stats, badges, coach messages ---- */
+.rehab-zen .stat-tile {
+  background: linear-gradient(160deg, var(--rz-mist-soft) 0%, #ffffff 90%);
+  border-radius: 18px; transition: transform .3s cubic-bezier(.22,1,.36,1);
+}
+.rehab-zen .stat-tile:hover { transform: translateY(-2px); }
+.rehab-zen .stat-tile .num { color: var(--rz-mist-deep); font-weight: 680; }
+.rehab-zen .coach-msg, body.rehab-mode .modal .coach-msg { border-radius: 16px; }
+.rehab-zen .item-row { border-bottom-color: #f0f2f3; }
+.rehab-zen .divider { border-top-color: #eef0f2; }
+
+/* ---- modals in rehab mode: soft depth, blurred light ---- */
+body.rehab-mode .modal-overlay { background: rgba(72, 94, 114, .28); backdrop-filter: blur(7px); }
+body.rehab-mode .modal {
+  border-radius: 26px; border: none;
+  background: linear-gradient(180deg, #ffffff 0%, #fcfdfc 100%);
+  box-shadow: 0 30px 70px rgba(58, 82, 104, .22);
+  animation: rz-rise .45s cubic-bezier(.22,1,.36,1) both;
+}
+
+/* ---- illustrations: organic line art that breathes ---- */
+.rz-art { margin: 2px 0 14px; animation: rz-fade .8s ease both; }
+.rz-art svg { width: 100%; max-width: 430px; height: auto; display: block; }
+.rz-art .rz-sun { transform-origin: center; transform-box: fill-box; animation: rz-breathe 6s ease-in-out infinite; }
+.rz-art .rz-path { stroke-dasharray: 3 9; animation: rz-flow 30s linear infinite; }
+.rz-art .rz-leaf { transform-origin: bottom center; transform-box: fill-box; animation: rz-sway 7s ease-in-out infinite; }
+.rz-art .rz-leaf2 { animation-delay: 1.6s; }
+.rz-hero { display: flex; align-items: flex-end; gap: 18px; }
+
+/* ---- motion vocabulary: reassurance, not excitement ---- */
+@keyframes rz-fade { from { opacity: 0; } }
+@keyframes rz-rise { from { opacity: 0; transform: translateY(14px); } }
+@keyframes rz-grow-x { from { transform: scaleX(.2); transform-origin: left; } }
+@keyframes rz-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+@keyframes rz-flow { to { stroke-dashoffset: -240; } }
+@keyframes rz-sway { 0%, 100% { transform: rotate(-2.5deg); } 50% { transform: rotate(2.5deg); } }
+@keyframes rz-drift-a { to { transform: translate(70px, 26px) scale(1.12); } }
+@keyframes rz-drift-b { to { transform: translate(-60px, 34px) scale(1.08); } }
+@keyframes rz-drift-c { to { transform: translate(40px, -20px) scale(1.15); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .rehab-zen *, .rehab-zen, body.rehab-mode .modal { animation: none !important; transition: none !important; }
+}
 </style>
 </head>
 <body>
@@ -5782,19 +5981,48 @@ const Rehab = (() => {
     S.rehab.daily = S.rehab.daily || [];
     S.rehab.flares = S.rehab.flares || [];
     S.rehab.eduRead = S.rehab.eduRead || [];
-    if (params && params.startsWith("learn")) return renderLearn(container, params.split(":")[1] || null);
+    /* Calm design layer: everything renders inside .rehab-zen, under a
+       slowly drifting sky. Content and structure are unchanged. */
+    const zen = el("div.rehab-zen", null,
+      el("div.rz-sky", { "aria-hidden": "true" },
+        el("i.rz-blob.rz-b1"), el("i.rz-blob.rz-b2"), el("i.rz-blob.rz-b3")));
+    container.appendChild(zen);
+    if (params && params.startsWith("learn")) return renderLearn(zen, params.split(":")[1] || null);
     if (!S.rehab.active || !S.rehab.profile) {
-      renderOnboarding(container);
+      renderOnboarding(zen);
       return;
     }
-    if (params === "session") renderSession(container);
-    else if (params === "plan") renderPlan(container);
-    else if (params === "review") renderReview(container);
-    else if (params === "maintenance") renderMaintenance(container);
-    else if (params === "flare") renderFlare(container);
-    else if (params === "progress") renderProgress(container);
-    else renderDashboard(container);
+    if (params === "session") renderSession(zen);
+    else if (params === "plan") renderPlan(zen);
+    else if (params === "review") renderReview(zen);
+    else if (params === "maintenance") renderMaintenance(zen);
+    else if (params === "flare") renderFlare(zen);
+    else if (params === "progress") renderProgress(zen);
+    else renderDashboard(zen);
   }
+
+  /* ---- Organic line-art illustrations (mountains, path, growth) ---- */
+  const RZ_ART = {
+    /* layered hills, a winding path of light, a breathing sun */
+    mountains: `<svg viewBox="0 0 430 120" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A path winding up gentle mountains toward the sun">
+      <circle class="rz-sun" cx="352" cy="30" r="15" fill="#ecc78e" opacity=".9"/>
+      <circle cx="352" cy="30" r="24" fill="#ecc78e" opacity=".18"/>
+      <path fill="#dce7ef" d="M0 104 L84 34 Q92 26 100 35 L182 104 Z"/>
+      <path fill="#c9d9e4" d="M112 104 L214 16 Q222 8 230 17 L342 104 Z"/>
+      <path fill="#c2d1c2" opacity=".92" d="M258 104 L326 46 Q333 39 340 47 L430 104 Z"/>
+      <path class="rz-path" d="M14 108 Q100 100 150 78 T260 44 T382 22" fill="none" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round"/>
+      <ellipse cx="215" cy="108" rx="215" ry="6" fill="#e8ede8" opacity=".7"/>
+    </svg>`,
+    /* a small plant reaching upward — growth, patience */
+    plant: `<svg viewBox="0 0 120 96" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A young plant growing">
+      <ellipse cx="60" cy="88" rx="34" ry="5" fill="#e4ebe4"/>
+      <path d="M60 88 Q59 58 60 38" fill="none" stroke="#7d9a82" stroke-width="3" stroke-linecap="round"/>
+      <path class="rz-leaf" d="M60 62 Q40 58 34 40 Q54 42 60 58 Z" fill="#9db8a1"/>
+      <path class="rz-leaf rz-leaf2" d="M60 50 Q80 46 86 28 Q66 30 60 46 Z" fill="#8aab90"/>
+      <circle class="rz-sun" cx="60" cy="30" r="7" fill="#a9c4ad"/>
+    </svg>`
+  };
+  const rzArt = (kind, style) => el("div.rz-art", { html: RZ_ART[kind], style: style || "" });
 
   const phaseFor = p => KD.PHASES.find(x => x.n === p);
   const exercisesFor = profile =>
@@ -5854,6 +6082,7 @@ const Rehab = (() => {
       let act = actions(!!draft.reason);
       function redo() { const n = actions(!!draft.reason); act.replaceWith(n); act = n; }
       wrap.append(
+        rzArt("mountains"),
         el("h2", null, "Rehab & Persistent Pain"),
         el("div.notice-calm", null,
           "This pathway helps you understand your symptoms, build confidence, and gradually return to meaningful activities. ",
@@ -6587,6 +6816,7 @@ const Rehab = (() => {
 
     const header = el("div.section-head", null,
       el("div", null,
+        rzArt("mountains", "max-width:360px;margin-bottom:10px;"),
         el("h2", null, "Rebuild confidence with movement"),
         el("p.muted", { style: "margin:2px 0 0;" },
           el("b", null, "Today's focus: "), phase.blurb.split(".")[0] + "."),
@@ -7019,6 +7249,7 @@ const Rehab = (() => {
         patterns.map(p => el("div.coach-msg.status-grey", null, el("span.dot"), el("span", null, p)))) : null,
       el("div.card", null,
         el("div.card-title", null, el("h3", null, "Milestones & learnings")),
+        rzArt("plant", "max-width:120px;margin:4px 0 10px;"),
         (S.rehab.flares || []).length ? el("div.item-row", null,
           el("span", null, "🛟"), el("div", { style: "flex:1;font-size:14px;" }, `${S.rehab.flares.length} flare${S.rehab.flares.length === 1 ? "" : "s"} managed with a plan — that's a skill, and it's yours now.`)) : null,
         learnings.length ? learnings.map(s => el("div.item-row", null,
@@ -12491,6 +12722,9 @@ const App = (() => {
     const S = Store.state;
 
     topbar.hidden = !S.onboarded && current.route === "home";
+    /* Rehab's calm design layer also softens its modals (rendered outside
+       the view), via a body-level mode class. */
+    document.body.classList.toggle("rehab-mode", current.route === "rehab");
     drawNav();
     drawBottomNav();
     clear(view);
