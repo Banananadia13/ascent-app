@@ -828,7 +828,9 @@ body.phone-mode .wizard-actions .btn { padding: 9px 16px; }
    How We Feel × Apple Health × Headspace. Scoped so the rest
    of the app is untouched.
    ============================================================ */
-.rehab-zen {
+/* Palette lives on BOTH the view wrapper and the body mode class, so
+   modals/toasts (rendered outside .rehab-zen) resolve the same tokens. */
+body.rehab-mode, .rehab-zen {
   /* palette: soft whites, warm greys, mist blue, sage, muted teal, amber, subtle coral */
   --rz-mist: #7f9fbd;
   --rz-mist-deep: #5c80a3;
@@ -846,6 +848,8 @@ body.phone-mode .wizard-actions .btn { padding: 9px 16px; }
   --rz-cloud: #fdfdfb;
   --rz-shadow: 0 6px 24px rgba(92, 118, 143, .08), 0 1px 3px rgba(92, 118, 143, .06);
   --rz-shadow-hover: 0 14px 34px rgba(92, 118, 143, .13), 0 2px 6px rgba(92, 118, 143, .07);
+}
+.rehab-zen {
   position: relative;
   color: var(--rz-ink);
   animation: rz-fade .6s ease both;
@@ -1020,6 +1024,132 @@ body.rehab-mode .modal {
 @media (prefers-reduced-motion: reduce) {
   .rehab-zen *, .rehab-zen, body.rehab-mode .modal { animation: none !important; transition: none !important; }
 }
+
+
+/* ---- focus: soft mist ring instead of the browser default ---- */
+.rehab-zen .chip:focus, .rehab-zen .btn:focus, .rehab-zen .tl-btn:focus, .rehab-zen .rz-topic:focus,
+body.rehab-mode .modal .chip:focus, body.rehab-mode .modal .btn:focus, body.rehab-mode .tl-btn:focus { outline: none; }
+.rehab-zen .chip:focus-visible, .rehab-zen .btn:focus-visible, .rehab-zen .tl-btn:focus-visible, .rehab-zen .rz-topic:focus-visible,
+body.rehab-mode .modal .chip:focus-visible, body.rehab-mode .modal .btn:focus-visible, body.rehab-mode .tl-btn:focus-visible {
+  outline: 2.5px solid var(--rz-mist); outline-offset: 2px;
+}
+
+/* ============================================================
+   REHAB — Explore education, Capacity Cup & Ascent Journey
+   ============================================================ */
+
+/* ---- explore grid: question-led topic cards ---- */
+.rz-explore { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
+.rz-topic {
+  text-align: left; border: none; cursor: pointer; font-family: inherit;
+  border-radius: 22px; padding: 18px 20px;
+  background: linear-gradient(180deg, #ffffff, var(--rz-cloud));
+  box-shadow: var(--rz-shadow); color: var(--rz-ink);
+  transition: transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s ease;
+  animation: rz-rise .6s cubic-bezier(.22,1,.36,1) both;
+}
+.rz-explore .rz-topic:nth-child(2) { animation-delay: .05s; }
+.rz-explore .rz-topic:nth-child(3) { animation-delay: .1s; }
+.rz-explore .rz-topic:nth-child(4) { animation-delay: .15s; }
+.rz-explore .rz-topic:nth-child(5) { animation-delay: .2s; }
+.rz-explore .rz-topic:nth-child(6) { animation-delay: .25s; }
+.rz-explore .rz-topic:nth-child(n+7) { animation-delay: .3s; }
+.rz-topic:hover { transform: translateY(-3px); box-shadow: var(--rz-shadow-hover); }
+.rz-topic.rz-read { background: linear-gradient(180deg, #fdfefd, var(--rz-sage-soft)); }
+.rz-topic-ico {
+  width: 38px; height: 38px; border-radius: 13px; display: inline-flex;
+  align-items: center; justify-content: center; font-size: 18px;
+  background: var(--rz-mist-soft);
+}
+.rz-topic-q { font-size: 16.5px; font-weight: 650; line-height: 1.3; margin: 10px 0 5px; letter-spacing: -.01em; }
+.rz-topic-sub { font-size: 12.5px; color: var(--rz-ink-soft); }
+
+/* ---- lesson flow ---- */
+.rz-lesson { max-width: 560px; margin: 0 auto; }
+.rz-lesson-q { font-size: 27px; font-weight: 650; letter-spacing: -.015em; line-height: 1.22; color: var(--rz-ink); }
+.rz-lesson-step { animation: rz-rise .5s cubic-bezier(.22,1,.36,1) both; }
+.rz-lesson-dots { display: flex; gap: 7px; justify-content: center; margin: 4px 0 20px; }
+.rz-lesson-dots span { width: 8px; height: 8px; border-radius: 50%; background: #e0e6ea; transition: background .4s ease, transform .4s ease; }
+.rz-lesson-dots span.on { background: var(--rz-teal); transform: scale(1.18); }
+
+/* ---- interactives ---- */
+.rz-ivl {
+  border: none; border-radius: 22px; background: #fff;
+  box-shadow: var(--rz-shadow); padding: 18px 20px;
+}
+.rz-ivl-caption { font-size: 13.5px; color: var(--rz-ink-soft); line-height: 1.5; min-height: 42px; margin-top: 12px; }
+.rz-stage svg { width: 100%; height: auto; display: block; }
+.rz-alarm-ring { opacity: 0; transform-origin: 170px 76px; }
+.rz-ringing .rz-alarm-ring { animation: rz-ringout 1.1s ease-out infinite; }
+.rz-ringing .rz-ring2 { animation-delay: .35s; }
+@keyframes rz-ringout { 0% { opacity: .9; transform: scale(.55); } 100% { opacity: 0; transform: scale(1.7); } }
+.rz-vg { transition: transform .8s cubic-bezier(.22,1,.36,1); transform-origin: 170px 80px; }
+.rz-hbar { height: 14px; border-radius: 999px; background: #eef1f3; overflow: hidden; margin-bottom: 4px; }
+.rz-hbar-fill { height: 100%; border-radius: 999px; transition: width .7s cubic-bezier(.22,1,.36,1); }
+.rz-orbit { position: relative; height: 250px; }
+.rz-glow {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+  width: 76px; height: 76px; border-radius: 50%;
+  background: radial-gradient(circle, #f0c9a8 0%, #d8907e 55%, rgba(216,144,126,0) 75%);
+  transition: transform .8s cubic-bezier(.22,1,.36,1), opacity .8s ease;
+  animation: rz-breathe 5s ease-in-out infinite;
+}
+.rz-orb {
+  position: absolute; transform: translate(-50%,-50%);
+  border: none; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 600;
+  padding: 7px 12px; border-radius: 999px; background: #fff; color: var(--rz-ink-soft);
+  box-shadow: 0 2px 10px rgba(92,118,143,.12); white-space: nowrap;
+  transition: transform .25s cubic-bezier(.22,1,.36,1), background .3s, color .3s, box-shadow .3s;
+}
+.rz-orb:hover { transform: translate(-50%,-50%) translateY(-2px); }
+.rz-orb.on.up { background: var(--rz-coral); color: #fff; box-shadow: 0 6px 16px rgba(216,144,126,.35); }
+.rz-orb.on.down { background: var(--rz-sage); color: #fff; box-shadow: 0 6px 16px rgba(125,154,130,.35); }
+.rz-sea { border-radius: 18px; overflow: hidden; background: linear-gradient(180deg, #f2f6f9, #e9f0f5); }
+.rz-wave-layer { animation: rz-wavex 9s linear infinite; }
+.rz-wave-slow { animation-duration: 14s; }
+@keyframes rz-wavex { to { transform: translateX(-170px); } }
+.rz-tl-exp {
+  display: flex; align-items: center; gap: 9px; width: 100%; text-align: left;
+  border: none; cursor: pointer; font-family: inherit; font-size: 14px;
+  border-radius: 16px; background: #fff; box-shadow: 0 2px 10px rgba(92,118,143,.09);
+  padding: 12px 14px; margin-top: 8px; color: var(--rz-ink);
+  transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s ease;
+}
+.rz-tl-exp:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(92,118,143,.14); }
+.rz-tl-green .tl-dot { background: var(--rz-sage); display: block; }
+.rz-tl-amber .tl-dot { background: var(--rz-amber); display: block; }
+.rz-tl-red .tl-dot { background: var(--rz-coral); display: block; }
+
+/* ---- capacity cup ---- */
+.rzcup-card { cursor: pointer; }
+.rzcup-vessel {
+  position: relative; width: 104px; flex: none;
+  border-radius: 22px 22px 30px 30px;
+  border: 2.5px solid rgba(120, 140, 160, .30);
+  background: linear-gradient(180deg, rgba(255,255,255,.6), rgba(238,244,248,.35));
+  backdrop-filter: blur(3px);
+  overflow: hidden;
+  box-shadow: inset 0 2px 8px rgba(92,118,143,.08), 0 6px 18px rgba(92,118,143,.10);
+  transition: height 1s cubic-bezier(.22,1,.36,1);
+}
+.rzcup-water {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(180deg, #a9c0d6 0%, #8ba9c4 45%, #7f9fbd 100%);
+  transition: height 1.2s cubic-bezier(.22,1,.36,1);
+}
+.rzcup-wave { position: absolute; top: -7px; left: 0; width: 200%; height: 14px; animation: rz-cupwave 7s linear infinite; }
+.rzcup-wave svg { width: 100%; height: 100%; display: block; }
+.rzcup-wave2 { animation-duration: 11s; animation-direction: reverse; opacity: .7; top: -5px; }
+@keyframes rz-cupwave { to { transform: translateX(-50%); } }
+.rzcup-shine {
+  position: absolute; top: 8px; bottom: 10px; left: 10px; width: 10px;
+  border-radius: 999px; background: linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,0));
+  pointer-events: none;
+}
+
+/* ---- ascent journey ---- */
+.rz-jpath { transition: stroke-dasharray 1.4s cubic-bezier(.22,1,.36,1); }
+.rz-jdot { animation: rz-breathe 4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 </style>
 </head>
 <body>
@@ -6034,7 +6164,7 @@ const Rehab = (() => {
      ============================================================ */
   function renderOnboarding(container) {
     const draft = {
-      reason: null, region: null, movements: [], goal: "",
+      reason: null, region: null, regions: [], movements: [], goal: "",
       goalCurrent: "", goalTarget: "",
       functionNow: 5, confidenceNow: 5, concernNow: 5,
       symptoms: { settle: null, trigger: null, avoid: null },
@@ -6129,25 +6259,33 @@ const Rehab = (() => {
         act);
     }
 
-    /* --- Step 3: region --- */
+    /* --- Step 3: region(s) — multiple areas welcome --- */
     function stepRegion() {
+      /* Selecting several areas maps the plan to the whole-body "Multiple
+         Areas" pathway; a single area keeps its region-specific plan. */
+      const syncRegion = () => {
+        draft.region = draft.regions.length === 1 ? draft.regions[0]
+          : draft.regions.length > 1 ? "Multiple Areas" : null;
+      };
       const row = el("div.chip-row");
       KD.PAIN_REGIONS.forEach(r => {
         const chip = el("button.chip.chip-rehab", {
           onclick: () => {
-            draft.region = r;
-            row.querySelectorAll(".chip").forEach(c => c.classList.remove("selected"));
-            chip.classList.add("selected");
+            const i = draft.regions.indexOf(r);
+            if (i >= 0) { draft.regions.splice(i, 1); chip.classList.remove("selected"); }
+            else { draft.regions.push(r); chip.classList.add("selected"); }
+            syncRegion();
             redo();
           }
         }, r);
-        if (draft.region === r) chip.classList.add("selected");
+        if (draft.regions.includes(r)) chip.classList.add("selected");
         row.appendChild(chip);
       });
-      let act = actions(!!draft.region);
-      function redo() { const n = actions(!!draft.region); act.replaceWith(n); act = n; }
+      let act = actions(draft.regions.length > 0);
+      function redo() { const n = actions(draft.regions.length > 0); act.replaceWith(n); act = n; }
       wrap.append(
         el("h2", null, "Where are your symptoms most relevant to your goal?"),
+        el("p.muted", null, "Choose every area that applies — one is fine, several is common."),
         el("div.card", null, row),
         act);
     }
@@ -6284,7 +6422,8 @@ const Rehab = (() => {
         el("h2", null, "Your rehab profile"),
         el("p.muted", null, "A practical starting picture — not a diagnosis."),
         el("div.card", null,
-          el("div.item-row", null, el("span.muted", null, "Main area"), el("b", null, draft.region)),
+          el("div.item-row", null, el("span.muted", null, draft.regions.length > 1 ? "Main areas" : "Main area"),
+            el("b", { style: "text-align:right;max-width:60%;" }, (draft.regions.length ? draft.regions : [draft.region]).join(", "))),
           el("div.item-row", null, el("span.muted", null, "Sensitive movements"), el("b", { style: "text-align:right;max-width:60%;" }, draft.movements.slice(0, 4).join(", ") + (draft.movements.length > 4 ? "…" : ""))),
           el("div.item-row", null, el("span.muted", null, "Goal"), el("b", null, draft.goal)),
           draft.goalCurrent ? el("div.item-row", null, el("span.muted", null, "Now → target"), el("b", null, `${draft.goalCurrent} → ${draft.goalTarget || "?"}`)) : null,
@@ -6801,6 +6940,66 @@ const Rehab = (() => {
     return pool[new Date().getDate() % pool.length];
   }
 
+  /* ---------- The Capacity Cup: a living vessel ----------
+     Water level = today's load in the cup (cup survey + latest daily
+     check-in). The vessel itself grows slowly over the weeks — capacity
+     rising, not just symptoms falling. Tap to see today's contributors. */
+  function rzCupCard(S) {
+    const { profile } = S.rehab;
+    const cupSum = Engine.cupSummary(profile.cup);
+    const daily = [...S.rehab.daily].sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+
+    const filling = [], draining = [];
+    KD.CUP_QUESTIONS.forEach(q => {
+      const v = profile.cup[q.id] ?? 5;
+      if (v >= 7) filling.push(q.label.toLowerCase());
+      else if (v <= 3) draining.push(q.label.toLowerCase() + " is on your side");
+    });
+    if (daily) {
+      if (daily.sleep === "poor") filling.push("poor sleep last night");
+      if (daily.sleep === "good") draining.push("good sleep last night");
+      if (daily.stress === "high") filling.push("a high-stress day");
+      if (daily.stress === "low") draining.push("a low-stress day");
+      if ((daily.confidence ?? 5) >= 7) draining.push("confidence is up today");
+    }
+
+    const weeks = Math.max(0, Math.floor((Date.now() - new Date(profile.createdAt).getTime()) / (7 * 864e5)));
+    const vh = 126 + Math.min(28, weeks * 2);   // the vessel grows as resilience builds
+    const pct = Math.min(90, Math.max(8, cupSum.score * 10));
+
+    const details = el("div", { style: "display:none;margin-top:12px;" },
+      el("div.field-label", null, "Today's contributors"),
+      filling.map(f => el("div.item-row", { style: "padding:7px 0;" },
+        el("span", { style: "color:var(--rz-coral);font-weight:700;flex:none;" }, "−"), el("div", { style: "flex:1;font-size:13.5px;" }, f))),
+      draining.map(d => el("div.item-row", { style: "padding:7px 0;" },
+        el("span", { style: "color:var(--rz-sage);font-weight:700;flex:none;" }, "+"), el("div", { style: "flex:1;font-size:13.5px;" }, d))),
+      !filling.length && !draining.length ? el("p.faint", null, "Nothing extreme either way today — a steady middle.") : null,
+      weeks >= 2 ? el("p.faint", { style: "margin-top:6px;" }, `The vessel has grown a little since you started — ${weeks} week${weeks === 1 ? "" : "s"} of building capacity.`) : null);
+
+    const vessel = el("div.rzcup-vessel", { style: `height:${vh}px;` },
+      el("div.rzcup-water", { style: `height:${pct}%;` },
+        el("div.rzcup-wave", { html: `<svg viewBox="0 0 240 14" preserveAspectRatio="none"><path d="M0 8 Q15 1 30 8 T60 8 T90 8 T120 8 T150 8 T180 8 T210 8 T240 8 V14 H0 Z" fill="#a9c0d6"/></svg>` }),
+        el("div.rzcup-wave.rzcup-wave2", { html: `<svg viewBox="0 0 240 14" preserveAspectRatio="none"><path d="M0 8 Q15 2 30 8 T60 8 T90 8 T120 8 T150 8 T180 8 T210 8 T240 8 V14 H0 Z" fill="#c3d4e2"/></svg>` })),
+      el("div.rzcup-shine"));
+
+    const card = el("div.card.rzcup-card", {
+      role: "button", tabindex: "0", title: "Tap for today's contributors",
+      onclick: () => { details.style.display = details.style.display === "none" ? "" : "none"; }
+    },
+      el("div.card-title", null, el("h3", null, "Your capacity cup"), el("span.hint", null, "tap for today's story")),
+      el("div", { style: "display:flex;gap:18px;align-items:flex-end;" },
+        vessel,
+        el("div", { style: "flex:1;" },
+          el("b", { style: "display:block;margin-bottom:4px;" }, `${cupSum.score}/10 full`),
+          el("p.muted", { style: "margin:0;font-size:13px;" }, cupSum.level === "full"
+            ? "Quite full today — smaller doses, kinder pacing. Still a training day."
+            : cupSum.level === "half"
+              ? "A fair amount in the cup — steady doses, watch the big spikes."
+              : "Good spare capacity — a lovely day to gently do a little more."))),
+      details);
+    return card;
+  }
+
   function renderDashboard(container) {
     const S = Store.state;
     const { profile, sessions, checkins } = S.rehab;
@@ -6821,11 +7020,11 @@ const Rehab = (() => {
         el("h2", null, "Rebuild confidence with movement"),
         el("p.muted", { style: "margin:2px 0 0;" },
           el("b", null, "Today's focus: "), phase.blurb.split(".")[0] + "."),
-        el("p.faint", { style: "margin:2px 0 0;" }, `${profile.region} · goal: ${profile.goal}`)),
+        el("p.faint", { style: "margin:2px 0 0;" }, `${(profile.regions && profile.regions.length ? profile.regions : [profile.region]).join(", ")} · goal: ${profile.goal}`)),
       el("div", { style: "display:flex;gap:8px;flex-wrap:wrap;" },
         el("button.btn.btn-secondary.btn-sm", { onclick: () => App.nav("rehab", "plan") }, "My plan"),
         el("button.btn.btn-secondary.btn-sm", { onclick: () => App.nav("rehab", "progress") }, "Progress"),
-        el("button.btn.btn-secondary.btn-sm", { onclick: () => App.nav("rehab", "learn") }, "Learn")));
+        el("button.btn.btn-secondary.btn-sm", { onclick: () => App.nav("rehab", "learn") }, "Explore")));
 
     /* --- Today's rehab session --- */
     const plan = exercisesFor(profile);
@@ -6948,7 +7147,7 @@ const Rehab = (() => {
       blockCard,
       el("div.grid-2", null,
         el("div", null, sessionCard, dailyCard, coachCard, statCard),
-        el("div", null, flareCard, eduCard, historyCard, toolsCard))));
+        el("div", null, rzCupCard(S), flareCard, eduCard, historyCard, toolsCard))));
   }
 
   /* ============================================================
@@ -6960,7 +7159,7 @@ const Rehab = (() => {
     const plan = KD.REHAB_PLANS[profile.region];
     container.appendChild(el("div.view-narrow", null,
       el("div.section-head", null,
-        el("h2", null, `${profile.region} plan`),
+        el("h2", null, `${(profile.regions && profile.regions.length > 1) ? "Multiple areas" : profile.region} plan`),
         el("button.btn.btn-ghost.btn-sm", { onclick: () => App.nav("rehab") }, "← Back")),
       el("p.muted", null, "You progress when your traffic lights and next-day responses say you're ready — not on a fixed schedule."),
       KD.PHASES.map(ph => {
@@ -7122,34 +7321,498 @@ const Rehab = (() => {
   }
 
   /* ============================================================
-     UNDERSTAND YOUR PAIN — education library
+     EXPLORE — interactive pain education
+     The same nine evidence-informed ideas (KD.PAIN_EDU), reframed
+     as short guided experiences: one question → play with it →
+     the idea in plain words → relate it to you → try it today.
      ============================================================ */
+
+  /* ---------- shared bits for interactives ---------- */
+  const ivBox = (...kids) => el("div.rz-ivl", null, kids);
+  const ivCaption = () => el("div.rz-ivl-caption", { "aria-live": "polite" });
+  const ivLabel = t => el("div.field-label", { style: "margin-top:12px;" }, t);
+
+  /* 1 — Pain is an alarm: sensitivity slider + what turns it up */
+  function ivAlarm() {
+    let base = 3; const factors = new Set();
+    const stage = el("div.rz-stage", { html: `
+      <svg viewBox="0 0 340 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A smoke alarm in a house, with toast below">
+        <path d="M58 92 L170 28 L282 92" fill="none" stroke="#c9d3da" stroke-width="6" stroke-linecap="round"/>
+        <rect x="72" y="92" width="196" height="94" rx="12" fill="#f5f7f9" stroke="#e0e6ea" stroke-width="2"/>
+        <circle class="rz-alarm-ring" cx="170" cy="76" r="17" fill="none" stroke="#d8907e" stroke-width="2.5"/>
+        <circle class="rz-alarm-ring rz-ring2" cx="170" cy="76" r="17" fill="none" stroke="#d8907e" stroke-width="2"/>
+        <circle class="rz-alarm" cx="170" cy="76" r="10.5" fill="#9db8a1"/>
+        <circle cx="170" cy="76" r="3.5" fill="#fff"/>
+        <rect x="104" y="154" width="38" height="20" rx="6" fill="#c9d9e6"/>
+        <rect x="111" y="141" width="10" height="15" rx="3" fill="#d9a662"/>
+        <rect x="124" y="141" width="10" height="15" rx="3" fill="#c68a4f"/>
+        <path d="M118 134 q4 -8 0 -15 M129 132 q-4 -8 0 -15" fill="none" stroke="#c3cbc5" stroke-width="2" stroke-linecap="round"/>
+        <text x="152" y="168" font-size="11" fill="#918c7d">no fire — just toast</text>
+      </svg>` });
+    const caption = ivCaption();
+    const range = el("input", { type: "range", min: 1, max: 10, step: 1, value: base });
+    range.addEventListener("input", () => { base = Number(range.value); update(); });
+    const chips = el("div.chip-row", { style: "margin-top:8px;" },
+      ["Poor sleep", "Stress", "A past injury", "Fear of damage", "Uncertainty"].map(f =>
+        el("button.chip.chip-rehab", {
+          onclick: (e) => { factors.has(f) ? factors.delete(f) : factors.add(f); e.target.classList.toggle("selected"); update(); }
+        }, f)));
+    function update() {
+      const level = Math.min(10, base + factors.size * 1.5);
+      const ringing = level >= 6;
+      stage.classList.toggle("rz-ringing", ringing);
+      stage.querySelector(".rz-alarm").setAttribute("fill", ringing ? "#d8907e" : level >= 4 ? "#d9a662" : "#9db8a1");
+      caption.textContent = ringing
+        ? "The alarm is ringing — with no fire, just toast. A sensitised system sounds the same alarm without new damage."
+        : level >= 4
+          ? "Getting touchy — a real fire would set it off, and toast is starting to worry it."
+          : "A calm alarm: it only rings for a real fire.";
+    }
+    update();
+    return ivBox(stage, ivLabel("Alarm sensitivity"), range,
+      ivLabel("What turns sensitivity up?"), chips, caption);
+  }
+
+  /* 2 — Hurt vs harm: two circles that overlap and separate */
+  function ivVenn() {
+    const EX = [
+      { label: "Fresh ankle sprain", off: 26, tiny: false, cap: "Early on, hurt and harm travel together — pain roughly tracks the injury." },
+      { label: "Same ankle, 3 months on", off: 96, tiny: false, cap: "The tissue has healed, but the alarm can still ring: hurt without harm." },
+      { label: "Paper cut", off: 96, tiny: true, cap: "Real damage, barely any pain: harm with very little hurt. The two really are different." }
+    ];
+    let idx = 0;
+    const stage = el("div.rz-stage", { html: `
+      <svg viewBox="0 0 340 170" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two overlapping circles labelled hurt and harm">
+        <g class="rz-vg rz-vg-hurt"><circle cx="170" cy="80" r="52" fill="#7f9fbd" opacity=".55"/><text x="170" y="84" text-anchor="middle" font-size="14" font-weight="650" fill="#39424b">Hurt</text></g>
+        <g class="rz-vg rz-vg-harm"><circle cx="170" cy="80" r="52" fill="#d8907e" opacity=".55"/><text x="170" y="84" text-anchor="middle" font-size="14" font-weight="650" fill="#39424b">Harm</text></g>
+      </svg>` });
+    const caption = ivCaption();
+    const row = el("div.chip-row");
+    EX.forEach((ex, i) => {
+      const c = el("button.chip.chip-rehab" + (i === 0 ? ".selected" : ""), {
+        onclick: () => {
+          idx = i;
+          row.querySelectorAll(".chip").forEach(x => x.classList.remove("selected"));
+          c.classList.add("selected");
+          update();
+        }
+      }, ex.label);
+      row.appendChild(c);
+    });
+    function update() {
+      const ex = EX[idx];
+      const hurt = stage.querySelector(".rz-vg-hurt"), harm = stage.querySelector(".rz-vg-harm");
+      hurt.style.transform = `translateX(${-ex.off / 2}px) scale(${ex.tiny ? .45 : 1})`;
+      harm.style.transform = `translateX(${ex.off / 2}px)`;
+      caption.textContent = ex.cap;
+    }
+    update();
+    return ivBox(stage, ivLabel("Try a story"), row, caption);
+  }
+
+  /* 3 — Healing vs sensitivity: tissue heals; the alarm is trained separately */
+  function ivHeal() {
+    let weeks = 0, practice = 0;
+    const tissueBar = el("div.rz-hbar-fill", { style: "background:linear-gradient(90deg,#9db8a1,#7d9a82);width:5%;" });
+    const alarmBar = el("div.rz-hbar-fill", { style: "background:linear-gradient(90deg,#e0b36a,#d8907e);width:85%;" });
+    const caption = ivCaption();
+    const range = el("input", { type: "range", min: 0, max: 12, step: 1, value: 0 });
+    range.addEventListener("input", () => { weeks = Number(range.value); update(); });
+    const btn = el("button.btn.btn-rehab.btn-sm", {
+      style: "margin-top:10px;",
+      onclick: () => { practice = Math.min(8, practice + 1); update(); }
+    }, "+ A week of calm, graded movement");
+    function update() {
+      const tissue = Math.min(100, 5 + (weeks / 12) * 95);
+      const alarm = Math.max(18, 85 - practice * 8);
+      tissueBar.style.width = tissue + "%";
+      alarmBar.style.width = alarm + "%";
+      caption.textContent = weeks >= 10 && practice === 0
+        ? "See the gap? Tissue healed — sensitivity stayed high. Time alone doesn't train the alarm."
+        : practice >= 4
+          ? "That's the lever: graded, repeated, calm exposure turns the alarm down. Sensitivity is trainable."
+          : "Slide time forward, then add calm movement — watch which one moves each bar.";
+    }
+    update();
+    return ivBox(
+      ivLabel("Tissue healing"), el("div.rz-hbar", null, tissueBar),
+      ivLabel("Alarm sensitivity"), el("div.rz-hbar", null, alarmBar),
+      ivLabel(`Weeks since injury`), range, btn, caption);
+  }
+
+  /* 4 — Pain has many inputs: an orbit of factors around a glow */
+  function ivOrbit() {
+    const F = [
+      { n: "Stress", up: true }, { n: "Good sleep", up: false }, { n: "Fear", up: true }, { n: "Movement", up: false },
+      { n: "Illness", up: true }, { n: "Confidence", up: false }, { n: "Worrying beliefs", up: true }, { n: "Recovery", up: false }
+    ];
+    const on = new Set();
+    const glow = el("div.rz-glow");
+    const caption = ivCaption();
+    const ring = el("div.rz-orbit", null, glow,
+      F.map((f, i) => {
+        const ang = (i / F.length) * Math.PI * 2 - Math.PI / 2;
+        const b = el("button.rz-orb" + (f.up ? ".up" : ".down"), {
+          style: `left:calc(50% + ${Math.cos(ang) * 42}%);top:calc(50% + ${Math.sin(ang) * 40}%);`,
+          onclick: () => { on.has(f.n) ? on.delete(f.n) : on.add(f.n); b.classList.toggle("on"); update(); }
+        }, f.n);
+        return b;
+      }));
+    function update() {
+      let v = 0.5;
+      F.forEach(f => { if (on.has(f.n)) v += f.up ? 0.13 : -0.1; });
+      v = Math.max(0.12, Math.min(1, v));
+      glow.style.transform = `translate(-50%,-50%) scale(${0.6 + v * 0.8})`;
+      glow.style.opacity = 0.35 + v * 0.6;
+      caption.textContent = v >= 0.8 ? "A loud day: lots feeding the alarm — and none of it is new damage."
+        : v <= 0.3 ? "A quiet day: the same body, with the dials turned down."
+        : "Tap what's true for you on any given day — the glow is your pain system responding to everything at once.";
+    }
+    update();
+    return ivBox(ring, caption);
+  }
+
+  /* 5 — Your personal dials: sliders that move today's system */
+  function ivDials() {
+    const state = { sleep: 5, stress: 5, confidence: 5 };
+    const glow = el("div.rz-glow", { style: "position:relative;left:auto;top:auto;transform:none;margin:6px auto 2px;" });
+    const caption = ivCaption();
+    const mk = (key, label, lo, hi, invert) => {
+      const r = el("input", { type: "range", min: 0, max: 10, step: 1, value: 5 });
+      r.addEventListener("input", () => { state[key] = Number(r.value); update(); });
+      return el("div", { style: "margin-bottom:8px;" }, el("div.field-label", null, label),
+        el("div", { style: "display:flex;gap:10px;align-items:center;font-size:11.5px;color:var(--text-faint);" },
+          el("span", null, lo), r, el("span", null, hi)));
+    };
+    function update() {
+      const v = Math.max(0.12, Math.min(1, 0.5 + (state.stress - 5) * 0.06 - (state.sleep - 5) * 0.05 - (state.confidence - 5) * 0.05));
+      glow.style.transform = `scale(${0.6 + v * 0.8})`;
+      glow.style.opacity = 0.35 + v * 0.6;
+      caption.textContent = v >= 0.75 ? "Days like this, the system has less to give — smaller doses, more recovery, zero guilt."
+        : v <= 0.35 ? "Days like this are for gently doing a little more — the system has room."
+        : "These are your dials. Noticing them is the skill; your daily check-ins do exactly this.";
+    }
+    update();
+    return ivBox(glow, mk("sleep", "Sleep", "Poor", "Great"), mk("stress", "Stress & life load", "Light", "Heavy"),
+      mk("confidence", "Confidence in your body", "Low", "High"), caption);
+  }
+
+  /* 6 — Boom–bust: the elastic band */
+  function ivBand() {
+    let strength = 3, busy = false;
+    const stage = el("div.rz-stage", { html: `
+      <svg viewBox="0 0 340 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An elastic band stretched between two anchors">
+        <circle cx="40" cy="70" r="9" fill="#c9d3da"/><circle cx="300" cy="70" r="9" fill="#c9d3da"/>
+        <path class="rz-band" d="M40 70 Q170 82 300 70" fill="none" stroke="#7f9fbd" stroke-width="4" stroke-linecap="round" style="transition:d .6s ease, stroke-width .6s ease, stroke .4s ease;"/>
+        <text class="rz-band-note" x="170" y="130" text-anchor="middle" font-size="12" fill="#918c7d"></text>
+      </svg>` });
+    const caption = ivCaption();
+    const band = () => stage.querySelector(".rz-band");
+    const note = () => stage.querySelector(".rz-band-note");
+    const set = (sag, sw, color) => { band().setAttribute("d", `M40 70 Q170 ${70 + sag} 300 70`); band().setAttribute("stroke-width", sw); band().setAttribute("stroke", color); };
+    const bigBtn = el("button.btn.btn-secondary.btn-sm", {
+      onclick: () => {
+        if (busy) return; busy = true;
+        strength = Math.max(1.5, strength - 1);
+        set(64, Math.max(2, strength - 1), "#d8907e");
+        note().textContent = "too much, too suddenly";
+        caption.textContent = "A big spike after quiet weeks stretches the band past what it's ready for — the classic flare recipe.";
+        setTimeout(() => { set(12, strength, "#7f9fbd"); busy = false; }, 900);
+      }
+    }, "One big burst");
+    const smallBtn = el("button.btn.btn-rehab.btn-sm", {
+      onclick: () => {
+        if (busy) return; busy = true;
+        strength = Math.min(9, strength + 0.7);
+        set(30, strength, "#7d9a82");
+        note().textContent = "a dose it can repeat";
+        caption.textContent = "Small, repeatable stretches — the band adapts and comes back a little stronger each time.";
+        setTimeout(() => { set(12, strength, "#7f9fbd"); busy = false; }, 900);
+      }
+    }, "Small dose, repeated");
+    caption.textContent = "Your capacity is elastic. Try both ways of loading it.";
+    set(12, strength, "#7f9fbd");
+    return ivBox(stage, el("div", { style: "display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;" }, bigBtn, smallBtn), caption);
+  }
+
+  /* 7 — Continue · Adjust · Pause: an expanding decision pathway */
+  function ivTrafficGuide(mod) {
+    const COLORS = [["green", "🟢"], ["amber", "🟡"], ["red", "🔴"]];
+    const wrapEl = el("div");
+    COLORS.forEach(([color], i) => {
+      const t = KD.TRAFFIC_LIGHT[color];
+      const body = el("div", { style: "display:none;padding:4px 2px 2px;" },
+        el("p.muted", { style: "margin:6px 0 0;font-size:13.5px;" }, mod.body[i]));
+      const head = el("button.rz-tl-exp.rz-tl-" + color, {
+        onclick: () => { const openNow = body.style.display === "none"; wrapEl.querySelectorAll(".rz-tl-body").forEach(x => x.style.display = "none"); body.style.display = openNow ? "" : "none"; }
+      }, el("span.tl-dot"), el("b", null, t.label), el("span.faint", { style: "margin-left:6px;" }, t.sub));
+      body.classList.add("rz-tl-body");
+      wrapEl.append(head, body);
+    });
+    return ivBox(el("p.muted", { style: "margin:0 0 10px;font-size:13.5px;" }, "Symptoms during rehab aren't a stop sign — they're a signpost. Tap each lane:"), wrapEl);
+  }
+
+  /* 8 — Flares as ocean waves: they rise, they settle */
+  function ivWaves() {
+    const stage = el("div.rz-stage.rz-sea", { html: `
+      <svg viewBox="0 0 340 150" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" role="img" aria-label="Ocean waves">
+        <g class="rz-swellable" style="transform-origin:50% 150px;transition:transform 1.6s cubic-bezier(.22,1,.36,1);">
+          <g class="rz-wave-layer"><path fill="#c9d9e6" opacity=".8" d="M0 92 Q42 74 85 92 T170 92 T255 92 T340 92 T425 92 T510 92 V150 H0 Z"/></g>
+          <g class="rz-wave-layer rz-wave-slow"><path fill="#7f9fbd" opacity=".55" d="M0 106 Q42 90 85 106 T170 106 T255 106 T340 106 T425 106 T510 106 V150 H0 Z"/></g>
+        </g>
+      </svg>` });
+    const caption = ivCaption();
+    let busy = false;
+    const btn = el("button.btn.btn-rehab.btn-sm", {
+      onclick: () => {
+        if (busy) return; busy = true;
+        const g = stage.querySelector(".rz-swellable");
+        g.style.transform = "scaleY(1.65)";
+        caption.textContent = "A flare rises — loud, convincing, and temporary…";
+        setTimeout(() => {
+          g.style.transform = "scaleY(1)";
+          caption.textContent = "…and settles. Every time. Flares are information about sensitivity, not evidence of new damage.";
+          busy = false;
+        }, 2600);
+      }
+    }, "A flare arrives");
+    caption.textContent = "Symptoms move like water — they have never once stayed at their peak.";
+    return ivBox(stage, btn, caption);
+  }
+
+  /* 9 — Signs of progress: reclaiming life extends the path */
+  function ivProgressPath() {
+    const ACTS = ["Walking", "Stairs", "Sleeping", "Gardening", "Playing with kids", "Work", "Sport", "Shopping", "Confidence"];
+    const picked = new Set();
+    const stage = el("div.rz-stage", { html: `
+      <svg viewBox="0 0 340 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A path climbing a mountain">
+        <circle class="rz-sun" cx="288" cy="34" r="13" fill="#ecc78e" opacity=".35" style="transition:opacity 1s ease;"/>
+        <path fill="#dce7ef" d="M0 128 L96 52 Q104 44 112 53 L206 128 Z"/>
+        <path fill="#c2d1c2" opacity=".9" d="M150 128 L246 40 Q254 32 262 41 L340 118 V128 Z"/>
+        <path class="rz-jpath" d="M12 136 Q90 128 140 104 T232 66 T304 30" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>
+        <g class="rz-flowers">
+          <circle cx="92" cy="122" r="3.5" fill="#d8907e" opacity="0" style="transition:opacity .8s;"/>
+          <circle cx="150" cy="100" r="3.5" fill="#e0b36a" opacity="0" style="transition:opacity .8s;"/>
+          <circle cx="212" cy="76" r="3.5" fill="#9db8a1" opacity="0" style="transition:opacity .8s;"/>
+          <circle cx="268" cy="48" r="3.5" fill="#7f9fbd" opacity="0" style="transition:opacity .8s;"/>
+        </g>
+        <ellipse cx="170" cy="140" rx="170" ry="5" fill="#e8ede8" opacity=".7"/>
+      </svg>` });
+    const caption = ivCaption();
+    const chips = el("div.chip-row", null, ACTS.map(a => el("button.chip.chip-rehab", {
+      onclick: (e) => { picked.has(a) ? picked.delete(a) : picked.add(a); e.target.classList.toggle("selected"); update(); }
+    }, a)));
+    const path = stage.querySelector(".rz-jpath");
+    let L = 400; try { L = path.getTotalLength(); } catch (e) {}
+    path.style.strokeDasharray = `0 ${L}`;
+    path.style.transition = "stroke-dasharray 1s cubic-bezier(.22,1,.36,1)";
+    function update() {
+      const pct = picked.size / ACTS.length;
+      path.style.strokeDasharray = `${Math.max(0.04, pct) * L} ${L}`;
+      stage.querySelectorAll(".rz-flowers circle").forEach((f, i) => f.setAttribute("opacity", pct >= (i + 1) * 0.22 ? "1" : "0"));
+      stage.querySelector(".rz-sun").style.opacity = 0.35 + pct * 0.6;
+      caption.textContent = picked.size === 0
+        ? "What has become even a little easier lately? Tap anything that's true."
+        : picked.size >= 5 ? "Look at that path. This is what recovery actually is — life coming back, one activity at a time."
+        : "Every activity you reclaim extends the path — this is the progress that matters, not a pain score.";
+    }
+    update();
+    return ivBox(stage, chips, caption);
+  }
+
+  /* ---------- the nine explorations ---------- */
+  const EXPLORE = [
+    { id: "protection", q: "Why does pain happen?", sub: "Meet your body's alarm system", ico: "🔔", iv: ivAlarm,
+      reflect: { q: "When does your alarm feel most sensitive?", opts: ["After poor sleep", "During stressful stretches", "When I'm worried it means damage", "I'm not sure yet — I'll watch for it"] },
+      take: "Next time symptoms speak up, try naming it: “that's my alarm, not a damage meter.” One slow breath before deciding anything." },
+    { id: "hurtharm", q: "Does hurt mean harm?", sub: "Two circles that often separate", ico: "◎", iv: ivVenn,
+      reflect: { q: "Where might your hurt and harm have separated?", opts: ["My symptoms are familiar and settle", "Movement hurts but nothing worsens after", "I'm still worried they're the same thing", "I want to test this gently"] },
+      take: "Pick one familiar, stable symptom today and treat it as hurt, not harm: continue calmly at an easy dose and watch whether it settles." },
+    { id: "persist", q: "Why hasn't my pain gone yet?", sub: "Healing and sensitivity are different clocks", ico: "⏳", iv: ivHeal,
+      reflect: { q: "How long has it been for you?", opts: ["Under 3 months", "3–12 months", "Over a year", "It comes and goes"] },
+      take: "Sensitivity is trainable at any stage. Today's session — at a dose your system can settle from — is one rep of that training." },
+    { id: "alarm", q: "What feeds the alarm?", sub: "Pain has many inputs, not one", ico: "🌐", iv: ivOrbit,
+      reflect: { q: "Which input is loudest for you right now?", opts: ["Sleep", "Stress", "Fear or uncertainty", "Physical load", "Honestly — several"] },
+      take: "Pick your loudest input and give it 10 minutes today: an earlier night, a walk, a breathing reset, or reading one more of these ideas." },
+    { id: "updown", q: "What turns pain up or down?", sub: "Find your personal dials", ico: "🎚", iv: ivDials,
+      reflect: { q: "Which dial moves your symptoms most?", opts: ["Sleep", "Stress", "Confidence", "I haven't noticed a pattern yet"] },
+      take: "Do today's 20-second check-in with this in mind — over a few weeks the app will show you your own dials in the Patterns card." },
+    { id: "dose", q: "How much should I do?", sub: "The elastic band experiment", ico: "🎯", iv: ivBand,
+      reflect: { q: "Which pattern sounds more like you?", opts: ["Big days, then crash days", "I hold back almost all the time", "Fairly steady doses", "Depends on the week"] },
+      take: "Choose one activity today and deliberately do a comfortable 70% of what you think you could — a dose worth repeating tomorrow." },
+    { id: "traffic", q: "How do I decide mid-session?", sub: "Continue · Adjust · Pause", ico: "🚦", iv: ivTrafficGuide,
+      reflect: { q: "Which lane do you find hardest to trust?", opts: ["Continuing when something's felt", "Adjusting instead of quitting", "Pausing without guilt", "I'm getting the hang of all three"] },
+      take: "In your next session, say the lane out loud for each exercise — Continue, Adjust or Pause. Decisions get easier when they have names." },
+    { id: "flare", q: "Why did I flare?", sub: "Waves rise. Waves settle.", ico: "🌊", iv: ivWaves,
+      reflect: { q: "What usually precedes your flares?", opts: ["An activity spike", "Poor sleep or illness", "A stressful patch", "Often no obvious reason"] },
+      take: "Write your flare plan somewhere you'll see it: drop to the last comfortable level, keep gentle movement in, let it settle, rebuild. No square one." },
+    { id: "adapting", q: "Am I actually getting better?", sub: "Progress isn't a pain score", ico: "⛰", iv: ivProgressPath,
+      reflect: { q: "What's your best evidence of adapting so far?", opts: ["Settling faster after sessions", "Doing more of what I care about", "Worrying less about symptoms", "Too early to tell — watching"] },
+      take: "Tonight, name one thing that's easier than a month ago — out loud or in your session notes. That's the scoreboard that counts." }
+  ];
+
   function renderLearn(container, openId) {
     const S = Store.state;
     S.rehab.eduRead = S.rehab.eduRead || [];
-    if (openId && !S.rehab.eduRead.includes(openId)) {
-      S.rehab.eduRead.push(openId);
-      Store.save();
-    }
-    container.appendChild(el("div.view-narrow", null,
+    const topic = openId ? EXPLORE.find(t => t.id === openId) : null;
+    if (topic) return renderLesson(container, topic);
+
+    const explored = EXPLORE.filter(t => S.rehab.eduRead.includes(t.id)).length;
+    container.appendChild(el("div", null,
       el("div.section-head", null,
-        el("h2", null, "Understand your pain"),
+        el("h2", null, "Explore your pain"),
         el("button.btn.btn-ghost.btn-sm", { onclick: () => App.nav("rehab") }, "← Back")),
-      el("p.muted", null, "Nine short ideas, 2–5 minutes each. Understanding is part of treatment — a system that makes sense is a system that can calm down."),
-      KD.PAIN_EDU.map(m => {
-        const open = m.id === openId;
-        const read = S.rehab.eduRead.includes(m.id);
-        return el("div.card", open ? { style: "border-color:var(--rehab);" } : null,
-          el("div.card-title", null,
-            el("h3", null, m.title),
-            read ? el("span.badge.status-green", null, el("span.dot"), "Read") : el("span.hint", null, "2 min")),
-          el("p.muted", { style: "margin-bottom:" + (open ? "8px" : "0") + ";" }, el("b", null, m.core)),
-          open ? el("div", null, m.body.map(p => el("p.muted", { style: "margin-top:8px;" }, p))) : null,
-          el("button.btn.btn-ghost.btn-sm", {
-            style: "margin-top:8px;",
-            onclick: () => App.nav("rehab", open ? "learn" : "learn:" + m.id)
-          }, open ? "Collapse" : "Read →"));
-      })));
+      el("p.muted", null, "Nine short experiences, 2–3 minutes each. One idea at a time — a system that makes sense is a system that can calm down."),
+      explored ? el("p.faint", { style: "margin:-6px 0 14px;" }, `${explored} of ${EXPLORE.length} explored — no order, no homework. Follow curiosity.`) : null,
+      el("div.rz-explore", null, EXPLORE.map(t => {
+        const read = S.rehab.eduRead.includes(t.id);
+        return el("button.rz-topic" + (read ? ".rz-read" : ""), { onclick: () => App.nav("rehab", "learn:" + t.id) },
+          el("div", { style: "display:flex;justify-content:space-between;align-items:center;gap:8px;" },
+            el("span.rz-topic-ico", null, t.ico),
+            read ? el("span.badge.status-green", null, el("span.dot"), "explored") : el("span.hint", null, "2–3 min")),
+          el("div.rz-topic-q", null, t.q),
+          el("div.rz-topic-sub", null, t.sub));
+      }))));
+  }
+
+  /* One guided experience: question → play → idea → you → today */
+  function renderLesson(container, topic) {
+    const S = Store.state;
+    const mod = KD.PAIN_EDU.find(m => m.id === topic.id);
+    let step = 0, reflection = null;
+    const TOTAL = 5;
+    const wrap = el("div.rz-lesson");
+    container.appendChild(wrap);
+
+    const next = (label, enabled = true) => el("button.btn.btn-rehab.btn-block", {
+      disabled: !enabled, style: "margin-top:16px;",
+      onclick: () => { step++; draw(); }
+    }, label || "Continue");
+
+    function finish(tryToday) {
+      if (!S.rehab.eduRead.includes(topic.id)) S.rehab.eduRead.push(topic.id);
+      S.rehab.eduReflections = S.rehab.eduReflections || [];
+      if (reflection) S.rehab.eduReflections.push({ id: topic.id, answer: reflection, date: new Date().toISOString() });
+      Store.save();
+      toast(tryToday ? "Lovely — it's on today's radar" : "Explored — one more idea in the bank");
+      App.nav("rehab", "learn");
+    }
+
+    function draw() {
+      clear(wrap);
+      wrap.append(
+        el("div.section-head", null,
+          el("span.hint", null, mod.title),
+          el("button.btn.btn-ghost.btn-sm", { onclick: () => App.nav("rehab", "learn") }, "✕ Close")),
+        el("div.rz-lesson-dots", null, Array.from({ length: TOTAL }, (_, i) => el(i <= step ? "span.on" : "span"))),
+        el("div.rz-lesson-step", null, [stepQ, stepPlay, stepIdea, stepYou, stepToday][step]()));
+    }
+
+    /* 1 · curiosity */
+    function stepQ() {
+      return el("div", null,
+        el("div.rz-lesson-q", null, topic.q),
+        el("p.muted", { style: "margin:14px 0 4px;" }, "Rather than tell you — let's play with it."),
+        next("Explore →"));
+    }
+    /* 2 · interactive */
+    function stepPlay() {
+      return el("div", null, topic.iv(mod), next());
+    }
+    /* 3 · the idea in plain words */
+    function stepIdea() {
+      return el("div", null,
+        el("div.notice-calm", null, el("b", null, "The idea: "), mod.core),
+        mod.body.map(p => el("p.muted", { style: "margin-top:10px;" }, p)),
+        next());
+    }
+    /* 4 · relate it to you */
+    function stepYou() {
+      let btn = next("Continue", !!reflection);
+      const row = el("div.chip-row", null, topic.reflect.opts.map(o =>
+        el("button.chip.chip-rehab" + (reflection === o ? ".selected" : ""), {
+          onclick: (e) => {
+            reflection = o;
+            row.querySelectorAll(".chip").forEach(c => c.classList.remove("selected"));
+            e.target.classList.add("selected");
+            const n = next("Continue", true); btn.replaceWith(n); btn = n;
+          }
+        }, o)));
+      return el("div", null,
+        el("div.rz-lesson-q", { style: "font-size:21px;" }, topic.reflect.q),
+        el("p.faint", { style: "margin:8px 0 14px;" }, "There's no wrong answer — this is noticing, not testing."),
+        row, btn);
+    }
+    /* 5 · try it today */
+    function stepToday() {
+      return el("div", null,
+        el("div.rz-lesson-q", { style: "font-size:21px;" }, "Would you like to try this today?"),
+        el("div.notice-calm", { style: "margin-top:14px;" }, topic.take),
+        el("div", { style: "display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;" },
+          el("button.btn.btn-rehab", { style: "flex:1;", onclick: () => finish(true) }, "Yes — I'll try it"),
+          el("button.btn.btn-secondary", { style: "flex:1;", onclick: () => finish(false) }, "Just exploring today")));
+    }
+
+    draw();
+  }
+
+  /* ---------- The Ascent Journey ----------
+     Recovery as an unfolding landscape: sessions, explored ideas,
+     managed flares and phase progress extend a winding mountain path.
+     Tough patches bring mist — the path never disappears. */
+  function rzJourneyCard(S) {
+    const { profile, sessions } = S.rehab;
+    const read = (S.rehab.eduRead || []).length;
+    const flaresManaged = (S.rehab.flares || []).length;
+    const phaseN = Math.min(profile.phase, 6);
+    const score = sessions.length * 2 + read * 1.5 + flaresManaged * 2 + phaseN * 3;
+    const pct = Math.max(0.05, Math.min(1, score / 55));
+    const recent = [...sessions].sort((a, b) => new Date(a.date) - new Date(b.date)).slice(-3);
+    const misty = recent.filter(s => (s.exercises || []).some(e => Engine.resolvedLight(e) === "red")).length >= 2;
+
+    const stage = el("div.rz-stage", { html: `
+      <svg viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Your journey up the mountain">
+        <circle class="rz-sun" cx="548" cy="44" r="20" fill="#ecc78e" opacity="${(0.3 + pct * 0.65).toFixed(2)}"/>
+        <circle cx="548" cy="44" r="32" fill="#ecc78e" opacity="${(0.1 + pct * 0.15).toFixed(2)}"/>
+        <path fill="#e3ebf1" opacity="${pct >= 0.55 ? .9 : .35}" style="transition:opacity 2s;" d="M300 178 L420 34 Q430 22 440 35 L570 178 Z"/>
+        <path fill="#dce7ef" d="M0 182 L128 74 Q138 62 148 75 L286 182 Z"/>
+        <path fill="#c9d9e4" d="M170 182 L330 40 Q340 28 350 41 L520 182 Z"/>
+        <path fill="#c2d1c2" opacity=".92" d="M420 182 L520 84 Q529 74 538 85 L640 176 V182 Z"/>
+        <path class="rz-jtrack" d="M18 196 Q120 186 190 158 T350 104 T480 66 T590 34" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity=".38" stroke-dasharray="2 8"/>
+        <path class="rz-jpath" d="M18 196 Q120 186 190 158 T350 104 T480 66 T590 34" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+        <circle class="rz-jdot" r="7" fill="#5f8f8c" stroke="#fff" stroke-width="2.5"/>
+        <g class="rz-jdeco">
+          <g style="transition:opacity 1.2s;opacity:${pct >= 0.18 ? 1 : 0};"><circle cx="120" cy="176" r="4" fill="#d8907e"/><circle cx="134" cy="182" r="3" fill="#e0b36a"/></g>
+          <g style="transition:opacity 1.2s;opacity:${pct >= 0.38 ? 1 : 0};"><path d="M252 142 v-16 M252 128 l-8 10 M252 126 l8 10" stroke="#7d9a82" stroke-width="3" stroke-linecap="round" fill="none"/></g>
+          <g style="transition:opacity 1.2s;opacity:${pct >= 0.58 ? 1 : 0};"><circle cx="392" cy="94" r="4" fill="#9db8a1"/><circle cx="406" cy="100" r="3" fill="#d8907e"/></g>
+          <g style="transition:opacity 1.2s;opacity:${pct >= 0.85 ? 1 : 0};"><path d="M590 34 v-18 M590 16 l12 5 -12 5" stroke="#d9a662" stroke-width="3" stroke-linecap="round" fill="none"/></g>
+        </g>
+        ${misty ? `<rect x="0" y="0" width="640" height="220" fill="#eef2f5" opacity=".42"><animate attributeName="opacity" values=".42;.3;.42" dur="9s" repeatCount="indefinite"/></rect>` : ""}
+        <ellipse cx="320" cy="206" rx="320" ry="8" fill="#e8ede8" opacity=".7"/>
+      </svg>` });
+
+    /* draw the travelled path + place the walker */
+    const path = stage.querySelector(".rz-jpath");
+    const dot = stage.querySelector(".rz-jdot");
+    try {
+      const L = path.getTotalLength();
+      path.style.strokeDasharray = `${L * pct} ${L}`;
+      const pt = path.getPointAtLength(L * pct);
+      dot.setAttribute("cx", pt.x); dot.setAttribute("cy", pt.y);
+    } catch (e) { dot.setAttribute("cx", 18); dot.setAttribute("cy", 196); }
+
+    const marks = [];
+    if (sessions.length) marks.push(`${sessions.length} session${sessions.length === 1 ? "" : "s"}`);
+    if (read) marks.push(`${read} idea${read === 1 ? "" : "s"} explored`);
+    if (flaresManaged) marks.push(`${flaresManaged} flare${flaresManaged === 1 ? "" : "s"} navigated`);
+    marks.push(`phase ${phaseN}`);
+
+    return el("div.card", null,
+      el("div.card-title", null, el("h3", null, "Your ascent"),
+        el("span.hint", null, misty ? "a misty stretch — the path is still there" : "the landscape grows with you")),
+      stage,
+      el("p.faint", { style: "margin:10px 0 0;" },
+        `Every session, explored idea, managed flare and phase moves you along the path — ${marks.join(" · ")}.`));
   }
 
   /* ============================================================
@@ -7222,6 +7885,7 @@ const Rehab = (() => {
       el("div.section-head", null,
         el("h2", null, "Your progress"),
         el("button.btn.btn-ghost.btn-sm", { onclick: () => App.nav("rehab") }, "← Back")),
+      rzJourneyCard(S),
       insight ? el("div.notice-calm", null, el("b", null, "This week: "), insight) : null,
       el("div.card", null,
         el("div.card-title", null, el("h3", null, "Return-to-life progress"), el("span.hint", null, "the thing that matters")),
